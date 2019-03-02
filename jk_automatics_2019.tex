@@ -1,0 +1,123 @@
+\documentclass[b5paper,10pt,twoside]{article}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[b5paper,centering]{geometry}
+\usepackage{fancyhdr}
+
+\setlength\textheight{184mm}
+\setlength\textwidth{127mm}
+
+\pagestyle{fancy}
+\renewcommand{\leftmark}{P. Janus, T. Kryjak}
+\renewcommand{\rightmark}{Tutaj tytuł}
+\fancyhead{}
+\fancyhead[RE]{\leftmark}
+\fancyhead[LE]{\thepage}
+\fancyhead[LO]{\rightmark}
+\fancyhead[RO]{\thepage}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+%\usepackage{titlesec}
+\usepackage{enumerate}
+% \usepackage{rotating}
+%\usepackage[font=small,labelfont=bf,labelsep=period]{caption}
+\usepackage{listings}
+\usepackage{todonotes}
+
+\lstloadlanguages{Python}  % to nie ma dla nas znaczenia
+
+\lstset{language=Python,
+basicstyle=\ttfamily\small,
+commentstyle=\ttfamily\small,
+classoffset=0,
+keywordstyle=\ttfamily\small,
+classoffset=1,
+keywordstyle=\ttfamily\small,
+classoffset=0,
+stringstyle=\ttfamily\small,
+commentstyle=\ttfamily\itshape\small,
+numbers=none,
+numberstyle=\ttfamily\small,
+identifierstyle=\ttfamily\small,
+showstringspaces=false,
+morekeywords={
+}}
+
+\sloppy
+\flushbottom
+\setlength{\parindent}{7mm}
+
+%\titlelabel{\thetitle.}
+%
+%\titleformat{\section}{\bfseries\large}{\filright \thesection . }{0ex}{}
+%odstępy: lewy, góra, dół
+%\titlespacing{\section}{7mm}{24pt plus 0pt minus 1pt}{12pt plus 0pt minus 1pt}
+
+%\titleformat{\subsection}
+%{\bfseries}{\filright \thesubsection.\hspace{7.5mm} }{0ex}{}
+%odstępy: lewy, góra, dół
+%\titlespacing{\section}{7mm}{24pt plus 0pt minus 1pt}{12pt plus 0pt minus 1pt}
+
+\renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+
+
+%\renewcommand{\figurename}{\bf Fig.}
+%\renewcommand{\refname}{REFERENCES}
+
+
+
+
+\begin{document}
+\thispagestyle{empty}
+
+\hrule
+
+\vspace{2mm}
+
+\noindent
+AUTOMATYKA/AUTIMATICS $\bullet$ 2019 $\bullet$ Vol. ? $\bullet$ No. ?
+
+\vspace{2mm}
+
+\hrule
+
+\vspace{22mm}
+
+Piotr Janus\footnote{AGH University of Science and Technology, Faculty of Electrical Engineering, Automatics, Computer Science and Biomedical Engineering, Krakow, Poland. e-mail: \{piojanus, tomasz.kryjak\}@agh.edu.pl}, Tomasz Kryjak$^*$
+
+\vspace{9mm}
+
+
+{\bf\Large Tutaj tytuł\\[2mm] \indent cd}
+
+\vspace{12mm}
+
+\noindent
+{\small \textbf{Abstract}: Abstract
+\vspace{12pt}
+
+\noindent
+{\small \textbf{Keywords}: }
+
+
+\section{Section title}
+\label{sec:title}
+
+
+\section{Conclusion}
+
+
+\bibliographystyle{plain}
+\bibliography{cars}
+
+
+
+\end{document}
