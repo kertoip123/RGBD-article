@@ -83,7 +83,7 @@ morekeywords={
 \vspace{2mm}
 
 \noindent
-AUTOMATYKA/AUTIMATICS $\bullet$ 2019 $\bullet$ Vol. ? $\bullet$ No. ?
+AUTOMATYKA/AUTOMATICS $\bullet$ 2019 $\bullet$ Vol. ? $\bullet$ No. ?
 
 \vspace{2mm}
 
@@ -108,8 +108,110 @@ Piotr Janus\footnote{AGH University of Science and Technology, Faculty of Electr
 {\small \textbf{Keywords}: }
 
 
-\section{Section title}
-\label{sec:title}
+\section{Introduction}
+\label{sec:introduction}
+Segmentacja obiektów pierwszoplanowych jest jednym z kluczowych elementów wielu advanced video surveillance systems (AVSS). Jest używana w systemach detekcji i trackowania obiektów oraz human behaviour analysis. Oprócz tego jest również ważnym elementem takich aplikacji jak abadnoned luggage detection and forbidded zone protection. Dobrymi przykładami są border control i airports.
+
+Do problemu segmentacji obiektów pierwszoplanowych można podejść na wiele sposobów. 
+The simplest group of foreground object detection algorithms
+is based on subtracting subsequent frames from a video
+sequence. More advanced approaches involve the so-called
+background modelling. For each pixel, a dedicated model is
+assigned that describes the background appearance in a given
+location. Then, depending on used algorithm, the new pixel
+value is compared to the background model and classified
+(as foreground, background and sometimes also shadow). The
+model is updated to incorporate changes in the scene like slow
+or fast light variations and movement of objects belonging to
+background (i.e a moved chair).
+
+
+However, these BGS techniques have some fundamental
+limitations because they utilized human perception (i.e.,
+visible light) based color spaces such as the red, green, and
+blue (RGB), the hue, saturation, and value (HSV) and the
+YUV where Y and UV represent luminance and chrominance,
+respectively. Basically, those methods are weak to
+color camouflage situations and also sensitive to illumination
+changes.
+
+%TODO przerobić, opis co zostało zrobione
+
+\section{Previous work}
+
+%TODO krócej
+Autorzy publikacji \cite{Hoffman_2016} przedstawili inne, bardzo ciekawe i niestandardowe podejście do segmentacji obiektów pierwszoplanowych. 
+Zaprezentowany algorytm zakłada wykorzystanie sieci neuronowa CNN. 
+Do uczenia sieci użyto, oprócz annotowanych danych uczących, także czujnik RGB--D, czyli urządzenie generujące obraz wraz z mapami głębi. 
+
+Oczywiście istnieje wiele metod segmentacji obiektów pierwszoplanowych, wykorzystujących sieci nieuronowe, w tym przypadku autorzy skupili się na usprawnieniu procesu uczenia. 
+Standardowo w tego typu algorytmach, sieć uczona jest na podstawie annotowanych obrazów w przestrzeni RGB. 
+Zbiory testowe można podzielić na wiele kategorii, jednak uzyskany w ten sposób dokładność detekcji nie zawsze jest zadowalająca. 
+W związku z tym autorzy przedstawili hybrydowy system, w którym równolegle uczone są dwie sieci. 
+Pierwsza z nich wykorzystuje standardowy zbiór obrazów zapisanych w przestrzeni RGB, natomiast w drugiej sieci wykorzystywana jest mapa głębi tego obrazu. W zaproponowanym podejściu kluczową rolę odgrywa wymiana informacji pomiędzy obiema sieciami CNN w trakcie procesu uczenia. 
+Dzięki takiemu rozwiązaniu można dużo efektywniej przeprowadzić taki proces dla obu sieci i następie połączyć je w jedną. 
+
+W pracy \cite{Hasnat_2014} został zaprezentowany kolejny, bazujący na obrazie z czujnika RGB--D, algorytm segmentacji obiektów pierwszoplanowych. W tym przypadku zaproponowano metodę działającą bez nadzoru, przedstawiony algorytm składa się z mechanizmu grupowania w dziedzinie barw i przestrzeni oraz statystycznego łączenia obszarów. Autorzy niestety nie przedstawili implementacji sprzętowej, przetestowano jedynie model programowy.
+
+Wykorzystany algorytm grupowania JCSA (ang. \textit{Joint Color-Spatial-Axial clustering}) służy do estymacji parametrów modelu tła, grupowania pikseli i w efekcie wyodrębnienia regionów na obrazie. Sam model tła jest hybrydowy i składa się z rozkładów Gaussa oraz Watsona. Do wspomnianego wcześniej grupowania pikseli użyto algorytmu BSC (\textit{Bregman Soft Clustering}). W ostatniej fazie metody, czyli łączeniu poszczególnych regionów wykorzystano natomiast graf sąsiedztwa (ang. \textit{RAG -- Region Adjacency Graph}), przedstawiony proces polega na łączeniu odpowiednich wierzchołków w grafie.
+
+Autorzy porównali zaprezentowany algorytm z innymi metodami bazującymi na obrazie głębi. Przeprowadzono testy dla różnych zestawów parametrów i zaproponowano odpowiednie wskaźniki jakości. Wykonane eksperymenty pozwoliły dobrać parametry algorytmu, natomiast uzyskane wyniki potwierdziły wyraźnie większą dokładność w stosunku do zaprezentowanych wcześniej rozwiązań.
+
+Publikacja \cite{Mattoccia_2015} przedstawia czujnik RGB--D w całości zrealizowany w układzie FPGA. System działa w czasie rzeczywistym z częstotliwością powyżej $30$Hz. Wykorzystano do tego celu układ FPGA Spartan 6, do akwizycji obrazu użyto natomiast czujników Aptina pracujących w rozdzielczości $800x480$ pikseli z częstotliwością $60$Hz. Komunikacja z sensorami odbywa się za pośrednictwem magistrali szeregowej $I^2C$.
+
+W pierwszym kroku przeprowadzana jest operacja rektyfikacji obrazu, otrzymywany sygnał pochodzi z dwóch sensorów konieczne jest zatem znalezienie odpowiadających sobie punktów na obu obrazach. Następnym etapem jest zastosowanie transformaty Censusa i operacja dopasowania stereo. Ostatni krok to złożona filtracja obrazu wyjściowego. Na wyjście systemu przekazywany jest 16 bitowy obraz głębi, który następnie jest przesyłany do hosta za pośrednictwem portu USB. Warto zaznaczyć, że autorzy wykorzystali technikę generacji kodu HLS (ang. \textit{High--Level Synthesis}), dzięki temu większość funkcjonalności została zaimplementowana w języku C i~automatycznie przekonwertowana na VHDL.
+
+
+Autorzy publikacji \cite{Boghdady_2015} zaproponowali wykorzystanie układu GPU do akceleracji sprzętowej algorytmu wykorzystującego rozkłady Gaussa. Przedstawiony system służy do przetwarzania obrazu z kilku kamer jednocześnie. Uzyskane rezultaty nie były jednak zadowalające -- uzyskano przyspieszenie jedynie około 50 procent w stosunku do modelu programowego. W tym przypadku największym ograniczeniem była konieczność transferu dużej ilości danych (kilka obrazów) pomiędzy CPU a GPU. Warto zwrócić uwagę, że autorzy wykorzystali jeden z tańszych układów graficznych dostępnych na rynku -- GeForce GT 730. Aktualnie zdecydowana większość zintegrowanych GPU dysponuje porównywalną lub większą wydajnością. 
+
+ 
+Praca \cite{Qin_2015} przedstawia implementację algorytmu ViBE z wykorzystaniem układu GPU.
+Zaproponowana metoda dodatkowo wykorzystuje uproszczoną metodę Gabor Wavelets do uzyskiwania informacji o krawędziach obrazu. Na tej podstawie odpowiednie piksele zostają wykorzystywane do aktualizacji modelu tła. 
+Autorzy dokonali optymalizacji metody, w taki sposób aby możliwe było pełne wykorzystanie potencjału układu GPU. W tym celu operacje dla poszczególnych pikseli wykonywane są niezależnie i mogą być wykonane równolegle. 
+Implementacja została przetestowana na platformie sprzętowej składającej się z procesora Intel Core Quad Q8400 CPU oraz procesora graficznego Nvidia GTX 650Ti. Wykorzystano obraz o rozdzielczości 960x540, uzyskana wydajność wynosi odpowiednio $1.8$ i $26$ klatek na sekundę dla CPU i GPU w najbardziej rozbudowanym wariancie algorytmu.
+
+
+Publikacja \cite{Song_2016} opisuje złożony system wizyjny, w którym układ GPU został wykorzystany do akceleracji algorytmu służącego do detekcji i indeksacji obiektów pierwszoplanowych. 
+Zaproponowany system służy do inteligentnego, automatycznego zarządzania energią w pomieszczeniu. 
+Oprócz wspomnianego układu GPU wykorzystano także czujnik temperatury. 
+Oba urządzenia przy pomocy protokołu Zigbee komunikują się z inteligentnymi licznikami. 
+Na podstawie otrzymanych informacji inteligentne liczniki sterują klimatyzacją, oświetleniem i innymi urządzeniami elektrycznymi. 
+Jednym z przykładów użycia może być sytuacja gdy zmniejszy się liczba osób w pomieszczeniu temperatura może zostać obniżona. 
+Warto dodać, że całość może być także sterowana przy pomocy smartphona. Autorom udało się zapewnić oszczędność energii na poziomie 20-50 procent. Testy przeprowadzono na karcie graficznej GeForce GT 770 i osiągnięto wydajność na poziomie 34 klatek na sekundę w rozdzielczości $768x576$.
+
+
+W pracy \cite{Guler_2016} autorzy zaimplementowali kilka algorytmów wizyjnych z wykorzystaniem GPU. 
+Wśród zrealizowanych metod znalazły się detekcja ruchu, wykrywanie sabotażu kamery, wykrywanie porzuconego bagażu oraz śledzenie obiektów. Dzięki akceleracji GPU udało się uzyskać niemalże 22-krotne przyspieszenie w stosunku do CPU. Do testów użyto procesora NVIDIA Tesla C2075 z architekturą Keplera. 
+
+Do detekcji ruchu została wykorzystana metoda VSAM, jest to klasyczny algorytm wykorzystujący adaptacyjny model  tła, osobny dla poszczególnych pikseli. Model ten jest aktualizowany wraz z każdą kolejną ramką na podstawie wyniku klasyfikacji. Opisana implementacja została także wykorzystana w metodzie służącej do wykrycia sabotażu kamery. Algorytm ten opiera się na porównaniu obraz wejściowego z obrazem tła i wyznaczeniu ich histogramów. Z kolei w celu detekcji przesunięcia kamery porównywane są obrazy tła z dwóch kolejnych ramek. W przypadku, gdy jeden obraz jest przesunięty względem drugiego o dany wektor, oznacza to, że kamera została przesunięta. Detekcja porzuconego obiektu została zaimplementowana z wykorzystaniem algorytmu GMM do segmentacji tła oraz metody indeksacji. Finalnie analiza wyszczególnionych obszarów pozwala wyszukać obiekty statyczne. Dodatkowo autorzy wykorzystali metodę GMM również w algorytmie śledzenia obiektów.
+
+
+\section{Real--time video stream processing in GPU}
+%TODO 
+%opis komunikacji pomiędzy hostem i GPU + rysunek, 
+%standardowy algorytm segmetnacji obiektów (model tła, znajduje się w pamięci współdzielonej), 
+%opisać co zrobione w OpenCV, a co w CUDA, 
+%biblioteka intela
+
+\section{Proposed algorithms}
+%TODO tutaj opisać użyte algorytmy
+% GMM z modyfikacjami
+% PBAS z modyfikacjami
+% PBAS z segmentacją obiektów + modyfikacje 
+
+\section{Evaluation}
+%TODO ewaluacja algorytmów, 
+% nagrane sekwencje testowe,
+% opracowanie groundtrue
+% zastosowane współczynniki
+% porównanie z oryginalnymi implementacjami (wyniki z publikacji artykułach)
+
+\section{Hardware implementation}
+
+% opis zastosowanych modułów
+% w przypadku PBASa z indeksacją można dużo zrobić, np własna indeksacja w CUDA
+% rysunki 
+% implementation result
 
 
 \section{Conclusion}
