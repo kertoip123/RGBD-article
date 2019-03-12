@@ -14,7 +14,7 @@
 \setlength\textwidth{127mm}
 
 \pagestyle{fancy}
-\renewcommand{\leftmark}{P. Janus, T. Kryjak}
+\renewcommand{\leftmark}{P. Janus, T. Kryjak, M. Gorgoń}
 \renewcommand{\rightmark}{Tutaj tytuł}
 \fancyhead{}
 \fancyhead[RE]{\leftmark}
@@ -91,7 +91,7 @@ AUTOMATYKA/AUTOMATICS $\bullet$ 2019 $\bullet$ Vol. ? $\bullet$ No. ?
 
 \vspace{22mm}
 
-Piotr Janus\footnote{AGH University of Science and Technology, Faculty of Electrical Engineering, Automatics, Computer Science and Biomedical Engineering, Krakow, Poland. e-mail: \{piojanus, tomasz.kryjak\}@agh.edu.pl}, Tomasz Kryjak$^*$
+Piotr Janus\footnote{AGH University of Science and Technology, Faculty of Electrical Engineering, Automatics, Computer Science and Biomedical Engineering, Krakow, Poland. e-mail: \{piojanus, tomasz.kryjak, mago\}@agh.edu.pl}, Tomasz Kryjak$^*$, Marek Gorgoń$^*$
 
 \vspace{9mm}
 
@@ -110,9 +110,10 @@ Piotr Janus\footnote{AGH University of Science and Technology, Faculty of Electr
 
 \section{Introduction}
 \label{sec:introduction}
-Segmentacja obiektów pierwszoplanowych jest jednym z kluczowych elementów wielu advanced video surveillance systems (AVSS). Jest używana w systemach detekcji i trackowania obiektów oraz human behaviour analysis. Oprócz tego jest również ważnym elementem takich aplikacji jak abadnoned luggage detection and forbidded zone protection. Dobrymi przykładami są border control i airports.
 
-Do problemu segmentacji obiektów pierwszoplanowych można podejść na wiele sposobów. 
+%ten akapit ok
+Segmentacja obiektów pierwszoplanowych jest jednym z kluczowych elementów wielu advanced video surveillance systems (AVSS). Jest używana w systemach detekcji i trackowania obiektów oraz human behaviour analysis. Oprócz tego jest również ważnym elementem takich aplikacji jak abadnoned luggage detection and forbidded zone protection. Systemy mogę być użyte w border control i airports).
+
 The simplest group of foreground object detection algorithms
 is based on subtracting subsequent frames from a video
 sequence. More advanced approaches involve the so-called
@@ -125,19 +126,23 @@ model is updated to incorporate changes in the scene like slow
 or fast light variations and movement of objects belonging to
 background (i.e a moved chair).
 
+\textbf{TODO} - dlaczego RGB--D jest lepsze, jeden akapit
+%However, these BGS techniques have some fundamental
+%limitations because they utilized human perception (i.e.,
+%visible light) based color spaces such as the red, green, and
+%blue (RGB), the hue, saturation, and value (HSV) and the
+%YUV where Y and UV represent luminance and chrominance,
+%respectively. Basically, those methods are weak to
+%color camouflage situations and also sensitive to illumination
+%changes.
 
-However, these BGS techniques have some fundamental
-limitations because they utilized human perception (i.e.,
-visible light) based color spaces such as the red, green, and
-blue (RGB), the hue, saturation, and value (HSV) and the
-YUV where Y and UV represent luminance and chrominance,
-respectively. Basically, those methods are weak to
-color camouflage situations and also sensitive to illumination
-changes.
+%TODO opis co zostało zrobione
+W niniejszej pracy zaprezentowano rozszerzone wersje powszechnie wykorzystywanych algorytmów do segmentacji obiektów pierwszoplanowych. Opisane metody zostały dostosowane do przetwarzania danych otrzymanych ze standardowej kamery RGB oraz czujnika RGB-D. Skupiono się na algorytmach Gaussian Mixture Model (GMM) i Pixel-Based-Adaptive-Segmenter (PBAS), oprócz modelu programowego przygotowano także implementację sprzętową w układzie GPU z wykorzystaniem technologii CUDA. Do akwizycji obrazu użyto czujnika \textit{Intel Real--Sense} natomiast platforma sprzętowa to \textit{Nvidia Jetson}.
 
-%TODO przerobić, opis co zostało zrobione
+Struktura niniejszego artykułu jest następująca, w rozdziale \ref{sec:prev_work} przedstawiono wcześniejsze prace związane z wykorzystaniem czujników RGB--D do segmentacji obiektów pierwszoplanowych. Sekcja \ref{} opisuje sposób przekazywania sygnału pochodzącego z czujnika RGB--D do platformy obliczeniowej oraz architekturę do przetwarzania obrazu w technologi CUDA. W sekcji \ref{} opisano metodologię oraz przeprowadzone testy, sprawdzono w jaki sposób wykorzystanie czujnika RGB--D poprawia dokładność w stosunku do standardowego algorytmu. Sekcja \ref{} zawiera opis implementacji sprzętowej w układzie Nvidia Jetson. W ostatnim rozdziale zamieszczono podsumowanie oraz wskazano dalsze kierunki rozwoju.   
 
 \section{Previous work}
+\label{sec:prev_work}
 
 %TODO krócej
 Autorzy publikacji \cite{Hoffman_2016} przedstawili inne, bardzo ciekawe i niestandardowe podejście do segmentacji obiektów pierwszoplanowych. 
@@ -190,7 +195,7 @@ Do detekcji ruchu została wykorzystana metoda VSAM, jest to klasyczny algorytm 
 %TODO 
 %opis komunikacji pomiędzy hostem i GPU + rysunek, 
 %standardowy algorytm segmetnacji obiektów (model tła, znajduje się w pamięci współdzielonej), 
-%opisać co zrobione w OpenCV, a co w CUDA, 
+%opisać co zrobione w OpenCV, a co w CUDA, problem podziału zadań 
 %biblioteka intela
 
 \section{Proposed algorithms}
@@ -198,6 +203,9 @@ Do detekcji ruchu została wykorzystana metoda VSAM, jest to klasyczny algorytm 
 % GMM z modyfikacjami
 % PBAS z modyfikacjami
 % PBAS z segmentacją obiektów + modyfikacje 
+
+W trakcie badań zostały zaimplementowane 3 różne algorytmy, wykorzystujące zarówno obraz RGB pochodzący z kamery jak i obraz głębi. Pierwszym z nich jest rozszerzona wersja metody Gaussian Mixture Models. Implementacja została przygotwana w oparciu o publikację \cite{}. 
+
 
 \section{Evaluation}
 %TODO ewaluacja algorytmów, 
@@ -208,10 +216,13 @@ Do detekcji ruchu została wykorzystana metoda VSAM, jest to klasyczny algorytm 
 
 \section{Hardware implementation}
 
+% wykorzystane urządzenia - specyfikacja
+% przekonwertowanie do tej samej rozdzielczości
 % opis zastosowanych modułów
 % w przypadku PBASa z indeksacją można dużo zrobić, np własna indeksacja w CUDA
 % rysunki 
 % implementation result
+% wydajność
 
 
 \section{Conclusion}
