@@ -139,7 +139,7 @@ background (i.e a moved chair).
 %TODO opis co zostało zrobione
 W niniejszej pracy zaprezentowano rozszerzone wersje powszechnie wykorzystywanych algorytmów do segmentacji obiektów pierwszoplanowych. Opisane metody zostały dostosowane do przetwarzania danych otrzymanych ze standardowej kamery RGB oraz czujnika RGB-D. Skupiono się na algorytmach Gaussian Mixture Model (GMM) i Pixel-Based-Adaptive-Segmenter (PBAS), oprócz modelu programowego przygotowano także implementację sprzętową w układzie GPU z wykorzystaniem technologii CUDA. Do akwizycji obrazu użyto czujnika \textit{Intel Real--Sense} natomiast platforma sprzętowa to \textit{Nvidia Jetson}.
 
-Struktura niniejszego artykułu jest następująca, w rozdziale \ref{sec:prev_work} przedstawiono wcześniejsze prace związane z wykorzystaniem czujników RGB--D do segmentacji obiektów pierwszoplanowych. Sekcja \ref{} opisuje sposób przekazywania sygnału pochodzącego z czujnika RGB--D do platformy obliczeniowej oraz architekturę do przetwarzania obrazu w technologi CUDA. W sekcji \ref{} opisano metodologię oraz przeprowadzone testy, sprawdzono w jaki sposób wykorzystanie czujnika RGB--D poprawia dokładność w stosunku do standardowego algorytmu. Sekcja \ref{} zawiera opis implementacji sprzętowej w układzie Nvidia Jetson. W ostatnim rozdziale zamieszczono podsumowanie oraz wskazano dalsze kierunki rozwoju.   
+Struktura niniejszego artykułu jest następująca, w rozdziale \ref{sec:prev_work} przedstawiono wcześniejsze prace związane z wykorzystaniem czujników RGB--D do segmentacji obiektów pierwszoplanowych. Sekcja \ref{} opisuje sposób przekazywania sygnału pochodzącego z czujnika RGB--D do platformy obliczeniowej oraz architekturę do przetwarzania obrazu w technologi CUDA. Sekcja \ref{} zawiera opis implementacji sprzętowej w układzie Nvidia Jetson. W ostatnim rozdziale zamieszczono podsumowanie oraz wskazano dalsze kierunki rozwoju.   
 
 \section{Previous work}
 \label{sec:prev_work}
@@ -191,21 +191,92 @@ Wśród zrealizowanych metod znalazły się detekcja ruchu, wykrywanie sabotażu
 Do detekcji ruchu została wykorzystana metoda VSAM, jest to klasyczny algorytm wykorzystujący adaptacyjny model  tła, osobny dla poszczególnych pikseli. Model ten jest aktualizowany wraz z każdą kolejną ramką na podstawie wyniku klasyfikacji. Opisana implementacja została także wykorzystana w metodzie służącej do wykrycia sabotażu kamery. Algorytm ten opiera się na porównaniu obraz wejściowego z obrazem tła i wyznaczeniu ich histogramów. Z kolei w celu detekcji przesunięcia kamery porównywane są obrazy tła z dwóch kolejnych ramek. W przypadku, gdy jeden obraz jest przesunięty względem drugiego o dany wektor, oznacza to, że kamera została przesunięta. Detekcja porzuconego obiektu została zaimplementowana z wykorzystaniem algorytmu GMM do segmentacji tła oraz metody indeksacji. Finalnie analiza wyszczególnionych obszarów pozwala wyszukać obiekty statyczne. Dodatkowo autorzy wykorzystali metodę GMM również w algorytmie śledzenia obiektów.
 
 
-\section{Real--time video stream processing in GPU}
-%TODO 
-%opis komunikacji pomiędzy hostem i GPU + rysunek, 
-%standardowy algorytm segmetnacji obiektów (model tła, znajduje się w pamięci współdzielonej), 
-%opisać co zrobione w OpenCV, a co w CUDA, problem podziału zadań 
-%biblioteka intela
-
 \section{Proposed algorithms}
 %TODO tutaj opisać użyte algorytmy
 % GMM z modyfikacjami
 % PBAS z modyfikacjami
 % PBAS z segmentacją obiektów + modyfikacje 
 
-W trakcie badań zostały zaimplementowane 3 różne algorytmy, wykorzystujące zarówno obraz RGB pochodzący z kamery jak i obraz głębi. Pierwszym z nich jest rozszerzona wersja metody Gaussian Mixture Models. Implementacja została przygotwana w oparciu o publikację \cite{}. 
+W trakcie badań zostały zaimplementowane dwa różne algorytmy, wykorzystujące zarówno obraz RGB pochodzący z kamery jak i obraz głębi. Pierwszym z nich jest rozszerzona wersja metody \textit{Gaussian Mixture Models}. Implementacja została przygotowana w oparciu o publikację \cite{}. Drugą metodą jest również zmodyfikowana wersja istniejącego już algorytmu \textit{Pixel Based Adaptive Segmenter} \cite{}. Oba algorytmy są zbliżone pod względem koncepcji modelu tła. Jest on niezależny dla każdego piksela i aktualizowany po przetworzeniu każdej ramki obrazu. W kolejnych podsekcjach przedstawiono szczegółowo koncepcję obu metod. 
 
+\subsection{GMM algorithm with RGBD sensor}
+\label{subsec:gmm_rgbd}
+
+Gaussian Mixture Models is one of the most commonly used method for background modelling. 
+In this approach each pixel is represented by $k$ Gaussian distributions characterized by three parameters ($\omega$, $\mu$, $\sigma^2$). 
+
+$\omega$ is the normalized weight (range 0--1) of the Gaussian distribution.
+$\mu$ is the means vector of each colour component of a~particular pixel. 
+In the case of RGB colour space it can be defined as the vector of three numbers ($r_{mean}$, $g_{mean}$, $b_{mean}$).
+For the grayscale space it is a single number. 
+
+Finally, $\sigma^2$ is the variance of given Gaussian distribution -- a~single value is used for each colour component.
+Usually it is assumed that RGB components are independent, which allows to use 3 values instead of a~covariance matrix.
+It should be noticed that a~lot of varying implementations of the GMM algorithm have been proposed so far (cf. \cite{Bouwmans_2008}). 
+In this work, a~version based on the open source image processing library OpenCV was implemented. 
+
+
+
+
+The background model is initialized while processing the first frame of the video sequence. 
+The same initial weight and variance are assigned to each Gaussian distribution, while the vector of mean values is initialized with pixel values. 
+The algorithm itself is build up of several steps. 
+Firstly, sorting of Gaussian distributions with respect to weight in descending order is performed. 
+
+Then the current pixel ($x$) is tested against each Gaussian distribution. 
+For match estimation the Mahalanobins distance formula is applied:
+\begin{equation}
+\label{equ:mah_dist}
+d(x, \mu) = \sqrt{(x-\mu)\cdot(x-\mu)^T}
+\end{equation}
+
+
+
+
+A~pixel is classified as matching the Gaussian if the computed distance is lower than established threshold. 
+With respect to Equation (\ref{equ:match_test}) usually the triple value of standard deviation is used.
+\begin{equation}
+\label{equ:match_test}
+d(x, \mu) < 3 \cdot \sigma
+\end{equation}
+
+
+The next step is pixel classification based on match test. 
+According to Equation (\ref{equ:b_dist}), first $B$ Gaussian distributions, which weights exceed a~constant threshold $T$ are considered as background, otherwise they represent foreground. The default value of this parameter is 0.9 (the same as in OpenCV implementation).
+
+
+\begin{equation}
+\label{equ:b_dist}
+B = arg_b min \Bigg( \sum_{i=0}^{b}\omega_i>T \Bigg)
+\end{equation}
+
+
+
+The final step is model update. 
+The following formulas are applied:
+\begin{equation}
+\label{equ:w_update}
+\omega_{i+1} = \omega_{i} + \alpha(M-\omega_i)
+\end{equation}
+\begin{equation}
+\label{equ:u_update}
+\mu_{i+1} = \mu_{i} + M\frac{\alpha}{\omega_i} (x-\mu_i)
+\end{equation}
+\begin{equation}
+\label{equ:s_update}
+\sigma_{i+1} = \sigma_{i} + M\frac{\alpha}{\omega_i}\Big( (x-\mu_i) \cdot (x-\mu_i)^T \Big)
+\end{equation}
+\noindent where $\alpha$ represents the learning speed, while $M$ equals 1 for the first Gaussian distribution that passed the match test, otherwise it is 0. 
+Moreover the value of variance is upper constrained. 
+In the case of distributions, which do not match to pixel value, only the weight value is updated (decreased). 
+If instead none of the Gaussian distributions match the pixel, than new Gaussian is added (the same parameters as in the initialization phase are used). 
+The distribution with the lowest weight is replaced by the new one. 
+Finally, weights have to be normalized to range 0--1. 
+Assuming that the number of Gaussian distributions is $k=3$ and each parameter is 12 bits length, the total model size is 180 bits for each pixel.
+
+
+\subsection{PBAS algorithm with RGBD sensor}
+\label{subsec:pbas_rgbd}
 
 \section{Evaluation}
 %TODO ewaluacja algorytmów, 
@@ -216,20 +287,29 @@ W trakcie badań zostały zaimplementowane 3 różne algorytmy, wykorzystujące 
 
 \section{Hardware implementation}
 
+%TODO 
+%opis komunikacji pomiędzy hostem i GPU + rysunek, 
+%standardowy algorytm segmetnacji obiektów (model tła, znajduje się w pamięci współdzielonej), 
+%opisać co zrobione w OpenCV, a co w CUDA, problem podziału zadań 
+%biblioteka intela
+
 % wykorzystane urządzenia - specyfikacja
 % przekonwertowanie do tej samej rozdzielczości
 % opis zastosowanych modułów
-% w przypadku PBASa z indeksacją można dużo zrobić, np własna indeksacja w CUDA
+% w przypadku PBASa z indeksacją można dużo zrobić, np własna indeksacja w CUDA (-> conclusion)
 % rysunki 
 % implementation result
 % wydajność
 
 
+
+
+
 \section{Conclusion}
+%w przypadku PBASa z indeksacją można dużo zrobić, np własna indeksacja w CUDA
 
-
-\bibliographystyle{plain}
-\bibliography{cars}
+%\bibliographystyle{plain}
+%\bibliography{cars}
 
 
 
