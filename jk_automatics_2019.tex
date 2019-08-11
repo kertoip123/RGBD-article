@@ -282,14 +282,14 @@ Assuming that the number of Gaussian distributions is $k=3$ and each parameter i
 \subsection{PBAS algorithm with RGBD sensor}
 \label{subsec:pbas_rgbd}
 
-Model tła jest nieco bardziej złożony niż ten przedstawiony w algorytmie \textit{ViBE}. Jego pierwsza część, podobnie jak w poprzedniej metodzie, składa się z $N$ zapamiętanych próbek. W celu uproszczenia dalszego zapisu matematycznego, zdefiniujmy ten zbiór jako $B(x_i)$, gdzie $x_i$ to aktualnie przetwarzany piksel obrazu, całość została opisana równaniem (\ref{equ:pbas_model_1}).
+Modeł tła składa się z dwóch części. Pierwsza z nich zawiera $N$ ostatnich zapamiętanych próbek (wartości pikseli). Zapisywane są zarówno składowe RGB każdego piksela jak i parametr \textit{depth}. Definiujemy ten zbiór jako $B(x_i)$, gdzie $x_i$ to aktualnie przetwarzany piksel obrazu, całość została opisana równaniem (\ref{equ:pbas_model_1}).
 
 	\begin{equation}
 		B(x_i)= \left\{ B_1(x_i), B_2(x_i), \dotsc, B_N(x_i) \right\}
 	\label{equ:pbas_model_1}	
 	\end{equation}
 
-Test dopasowania, jest również bardzo podobny do tego, który występuje w metodzie \textit{ViBE}, jedyną różnicą jest niezależny dla każdego modelu próg przynależności do modelu $R(x_i)$, całość została przedstawiona równaniem (\ref{equ:pbas_test}).
+Kolejnym elementem algorytmu jest okrąg $S(v(x,y)$ o środku w punkcie $v(x,y)$ i promieniu $R(x_i)$. Promień ten jest elementem modelu tła, aktualizowanym wraz z kolejnymi ramkami obrazu. Piksel jest uznawany za pierwszoplanowy jeżeli przynajmniej $\#_{min}$ próbek z modelu tła zawiera się wewnątrz takiego okręgu. Test dopasowania został opisany równaniem (\ref{equ:pbas_test}). Oznaczmy przez F maskę reprezentującą obiekty pierwszoplanowe (1 – piksel pierwszoplanowy, 0 – tło).
 
 	\begin{equation}
 	    F(x_i) = 
@@ -301,21 +301,20 @@ Test dopasowania, jest również bardzo podobny do tego, który występuje w met
 	\end{equation}
 \noindent Gdzie $d$ to funkcja odległości pomiędzy próbką z modelu tła, a aktualnym pikselem. 
 
-W przypadku algorytmu w wersji \textit{RGB} każdy kanał przetwarzany jest osobno z wykorzystaniem niezależnego modelu tła. Finalna maska jest alternatywą logiczną wyników z poszczególnych kanałów, oznaczając poszczególne maski jako $F_R$, $F_G$, $F_B$ ostateczną klasyfikację możemy zapisać równaniem~(\ref{equ:pbas_final_mask}).
-
-    \begin{equation}
-        F_{RGB} = F_R \lor \lor F_G \lor F_B
-    \label{equ:pbas_final_mask}
-    \end{equation}
-
-
-Ponieważ każdy kanał analizowany jest osobno, funkcję odległości pomiędzy próbkami można zapisać bardzo prosto równaniem (\ref{equ:pbas_dist}). Jest to po prostu moduł różnicy.
+Ponieważ każdy kanał analizowany jest osobno, funkcję odległości pomiędzy próbkami można zapisać bardzo prosto równaniem (\ref{equ:pbas_dist}), jest to po prostu moduł różnicy.
 	\begin{equation}
 		d(I(x_i),B_k(x_i)) = | I(x_i) - B_k(x_i) |
 	\label{equ:pbas_dist}	
 	\end{equation}
 
-Kolejnym krokiem po przeprowadzeniu testu dopasowania i klasyfikacji piksela jest aktualizacja modelu tła. Zastosowano konserwatywne podejście, czyli aktualizowane są tylko piksele sklasyfikowane jako tło. Analogicznie jak w algorytmie \textit{ViBE} decyzja o aktualizacji podejmowana jest losowo. Prawdopodobieństwo jej wykonania wynosi $p = 1/T(x_i)$, gdzie parametr $T(x_i)$ jest dynamicznie aktualizowany i niezależny dla każdego piksela. Sama aktualizacja, polega na nadpisaniu, losowo wybranej próbki $B_k(x_i)$ z modelu aktualną wartością piksela $I(x_i)$. Dodatkowo, wybierany jest losowy piksela z otoczenia $3x3$ i losowo wybrana próbka z modelu mu odpowiadającego, jest nadpisywana wartością tego piksela.
+Każdy kanał przetwarzany jest osobno z wykorzystaniem niezależnego modelu tła. Finalna maska jest alternatywą logiczną wyników z poszczególnych kanałów, oznaczając poszczególne maski jako $F_R$, $F_G$, $F_B$, $F_D$ ostateczną klasyfikację możemy zapisać równaniem~(\ref{equ:pbas_final_mask}).
+
+    \begin{equation}
+        F_{RGBD} = F_R \lor \lor F_G \lor F_B \lor F_D
+    \label{equ:pbas_final_mask}
+    \end{equation}
+
+Kolejnym krokiem po przeprowadzeniu testu dopasowania i klasyfikacji piksela jest aktualizacja modelu tła. Zastosowano konserwatywne podejście, czyli aktualizowane są tylko piksele sklasyfikowane jako tło. Decyzja o aktualizacji podejmowana jest losowo. Prawdopodobieństwo jej wykonania wynosi $p = 1/T(x_i)$, gdzie parametr $T(x_i)$ jest dynamicznie aktualizowany i niezależny dla każdego piksela. Sama aktualizacja, polega na nadpisaniu, losowo wybranej próbki $B_k(x_i)$ z modelu aktualną wartością piksela $I(x_i)$. Dodatkowo, wybierany jest losowy piksela z otoczenia $3x3$ i losowo wybrana próbka z modelu mu odpowiadającego, jest nadpisywana wartością tego piksela.
 
 Niezależnie od aktualizacji części modelu zawierającej zapamiętane próbki dokonywana jest zmiana parametrów $R(x_i)$ i $T(x_i)$. W tym celu konieczne jest zdefiniowanie kolejnego elementu modelu tła, który zawiera zbiór minimalnych odległości pomiędzy próbką z modelu a aktualną wartością piksela. Zbiór ten został opisany równaniem (\ref{equ:pbas_model_2}). 
  
