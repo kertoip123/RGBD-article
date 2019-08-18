@@ -362,16 +362,39 @@ Ostatni etap to aktualizacja parametru opisującego prawdopodobieństwo dokonani
 	\label{equ:pbas_t_update}	
 	\end{equation}
 
-
-\section{Evaluation}
-\textbf{TODO:}\\
- ->ewaluacja algorytmów, \\
- ->nagrane sekwencje testowe, \\
- %->opracowanie groundtrue, \\
- ->zastosowane współczynniki, \\
- ->porównanie z oryginalnymi implementacjami (wyniki z publikacji artykułach ???)
-
 \section{Hardware implementation}
+
+\subsection{Hardware used}
+\label{subsec:hw_used}
+
+Do akwizycji obrazu użyto czujników RGB--D firmy Intel: REAL SENSE Depth Camera D415 oraz REAL SENSE Depth Camera D435. Zapewniają
+one obraz w maksymalnej rozdzielczości FULL HD (1920 x 1080 pikseli) oraz mapę głębi w rozdzielczości HD (1280 x 720 pikseli). Sam czujnik umożliwia rozróżnianie obiektów w odległości od 20 centymetrów do 10 metrów od obiektywu.
+
+Algorytm zaimplementowano na 3 różnych platformach sprzętowych. Pierwszą jest układ embedded GPU NVIDIA Jetson TX2 wyposażony w procesor ARM i układ GPU. Druga platforma to laptop wyposażony w procesor intel core i7-7700 i kartę graficzną Geforce GTX 1050m. Najwydajniejsza z testowanych platforma to komputer PC z intel Core i7-9700k i NVIDIA Geforce RTX 2070.
+\textbf{TODO: dokonczyc wstep}
+
+\subsection{Architektura}
+\label{subsec:architecture}
+
+Do implementacji sprzętowej wykorzystano opracowaną przez Nvidia architekturę CUDA ( Compute Unified Device Architecture). Dzięki temu implementacja może zostać uruchomiona na dowolnym układzie embedded GPU lub komputerze osobistym, które są wyposażone w procesor graficzny Nvidia. 
+
+W tego typu implementacji sprzętowej istotny jest podział zadań pomiędzy hostem i układem GPU oraz wykorzystanie pamięci współdzielonej. Host odpowiada za akwizycję obrazu i następnie skopiowanie go do pamięci współdzielonej z GPU. Oprócz tego po stronie hosta wykonywana jest również alokacja pamięci wykorzystywanej przez GPU, w związku z tym konieczne jest także zarezerwowanie pamięci dla modelu tła. 
+
+Właściwy algorytm został w całości zaimplementowany na procesorze graficznym, gdzie dla każdego przetwarzanego piksela tworzony jest osobny wątek. Wyjściem algorytmu jest maska binarna przedstawiająca obiekty pierwszoplanowe, jest umieszczona w pamięci współdzielonej i następnie odczytana przez hosta i przekazana na wyjście. \textbf{TODO: rysunek}
+
+Implementacja po stronie hosta została napisana w języku skryptowym \textit{Python}. Do akwizycji obrazu wykorzystano bibliotekę \textit{pyrealsense2} udostępnioną przez firmę \textit{Intel}. Umożliwia ona odczyt zarówno obrazu RGB z kamery  jak i składowej głębi w czasie rzeczywistym. Obraz głębi jest przesyłany z czujnika w formacie zmiennoprzecinkowym, zatem przed przesłaniem go do GPU konieczna jest konwersja do formatu 8 bitów na pixel (większa wartość oznacza, że obiekt jest dalej od kamery). Ostatecznie każdy piksel obrazu jest zapisany na 32 bitach, po 8 bitów na każdą składową RGB oraz odległość od czujnika. 
+
+\subsection{GMM implementation}
+\label{subsec:gmm_implementation}
+
+
+\subsection{PBAS implementation}
+\label{subsec:pbas_implementation}
+
+
+\subsection{Performance}
+\label{subsec:performance}
+
 
 \textbf{TODO:}\\ 
 ->opis komunikacji pomiędzy hostem i GPU + rysunek,\\ 
@@ -386,6 +409,13 @@ biblioteka intela,\\
 ->wydajność
 
 
+\section{Evaluation}
+\textbf{TODO:}\\
+ ->ewaluacja algorytmów, \\
+ ->nagrane sekwencje testowe, \\
+ %->opracowanie groundtrue, \\
+ ->zastosowane współczynniki, \\
+ ->porównanie z oryginalnymi implementacjami (wyniki z publikacji artykułach ???)
 
 
 
