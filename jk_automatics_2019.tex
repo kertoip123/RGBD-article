@@ -131,6 +131,7 @@ or fast light variations and movement of objects belonging to
 background (i.e a moved chair).
 
 \textbf{TODO} - dlaczego RGB--D jest lepsze, jeden akapit
+%TODO TK raczej co daje informacja o D.
 %However, these BGS techniques have some fundamental
 %limitations because they utilized human perception (i.e.,
 %visible light) based color spaces such as the red, green, and
@@ -141,12 +142,16 @@ background (i.e a moved chair).
 %changes.
 
 %TODO opis co zostało zrobione
-W niniejszej pracy zaprezentowano rozszerzone wersje powszechnie wykorzystywanych algorytmów do segmentacji obiektów pierwszoplanowych. Opisane metody zostały dostosowane do przetwarzania danych otrzymanych ze standardowej kamery RGB oraz czujnika RGB-D. Skupiono się na algorytmach Gaussian Mixture Model (GMM) i Pixel-Based-Adaptive-Segmenter (PBAS), oprócz modelu programowego przygotowano także implementację sprzętową w układzie GPU z wykorzystaniem technologii CUDA. Do akwizycji obrazu użyto czujnika \textit{Intel Real--Sense} natomiast platforma sprzętowa to \textit{Nvidia Jetson}.
+W niniejszej pracy zaprezentowano rozszerzone wersje powszechnie wykorzystywanych algorytmów do segmentacji obiektów pierwszoplanowych. Opisane metody zostały dostosowane do przetwarzania danych otrzymanych ze standardowej kamery RGB oraz czujnika RGB-D. Skupiono się na algorytmach Gaussian Mixture Model (GMM) i Pixel-Based-Adaptive-Segmenter (PBAS), oprócz modelu programowego przygotowano także implementację sprzętową w układzie GPU z wykorzystaniem technologii CUDA. 
+%TODO TK nie wiem czy GPU można nazwywać sprzętową... raczej wbudowaną. \cite do metod.
+Do akwizycji obrazu użyto czujnika \textit{Intel Real--Sense} natomiast platforma sprzętowa to \textit{Nvidia Jetson}.
 
-Struktura niniejszego artykułu jest następująca, w rozdziale \ref{sec:prev_work} przedstawiono wcześniejsze prace związane z wykorzystaniem czujników RGB--D do segmentacji obiektów pierwszoplanowych. Sekcja \ref{} opisuje sposób przekazywania sygnału pochodzącego z czujnika RGB--D do platformy obliczeniowej oraz architekturę do przetwarzania obrazu w technologi CUDA. Sekcja \ref{} zawiera opis implementacji sprzętowej w układzie Nvidia Jetson. W ostatnim rozdziale zamieszczono podsumowanie oraz wskazano dalsze kierunki rozwoju.   
+Struktura niniejszego artykułu jest następująca, w rozdziale \ref{sec:prev_work} przedstawiono wcześniejsze prace związane z wykorzystaniem czujników RGB--D do segmentacji obiektów pierwszoplanowych. Sekcja \ref{} opisuje sposób przekazywania sygnału pochodzącego z czujnika RGB--D do platformy obliczeniowej oraz architekturę do przetwarzania obrazu w technologi CUDA. Sekcja \ref{} zawiera opis implementacji sprzętowej w układzie Nvidia Jetson. W ostatnim rozdziale zamieszczono podsumowanie oraz wskazano dalsze kierunki rozwoju aplikacji.   
 
 \section{Previous work}
 \label{sec:prev_work}
+
+%TODO TK Tu musi być jakieś "zagajnie", a nie tak od razu i jeszcze dość niefortunnie (bo inne od czego ?)
 
 %TODO krócej
 Autorzy publikacji \cite{Hoffman_2016} przedstawili inne, bardzo ciekawe i niestandardowe podejście do segmentacji obiektów pierwszoplanowych. 
@@ -159,25 +164,49 @@ Zbiory testowe można podzielić na wiele kategorii, jednak uzyskany w ten spos�
 W związku z tym autorzy przedstawili hybrydowy system, w którym równolegle uczone są dwie sieci. 
 Pierwsza z nich wykorzystuje standardowy zbiór obrazów zapisanych w przestrzeni RGB, natomiast w drugiej sieci wykorzystywana jest mapa głębi tego obrazu. W zaproponowanym podejściu kluczową rolę odgrywa wymiana informacji pomiędzy obiema sieciami CNN w trakcie procesu uczenia. 
 Dzięki takiemu rozwiązaniu można dużo efektywniej przeprowadzić taki proces dla obu sieci i następie połączyć je w jedną. 
+%TODO TK: Ogólnie opis tego trzeba jakoś inaczej przedstawić, bo to jest niejasne. Tak samo nie wiadomo co za bardzo daje to -D
 
-W pracy \cite{Hasnat_2014} został zaprezentowany kolejny, bazujący na obrazie z czujnika RGB--D, algorytm segmentacji obiektów pierwszoplanowych. W tym przypadku zaproponowano metodę działającą bez nadzoru, przedstawiony algorytm składa się z mechanizmu grupowania w dziedzinie barw i przestrzeni oraz statystycznego łączenia obszarów. Autorzy niestety nie przedstawili implementacji sprzętowej, przetestowano jedynie model programowy.
+W pracy \cite{Hasnat_2014} został zaprezentowany kolejny, bazujący na obrazie z czujnika RGB--D, algorytm segmentacji obiektów pierwszoplanowych. 
+W tym przypadku zaproponowano metodę działającą bez nadzoru, przedstawiony algorytm składa się z mechanizmu grupowania w dziedzinie barw i przestrzeni oraz statystycznego łączenia obszarów. 
+Autorzy niestety nie przedstawili implementacji sprzętowej, przetestowano jedynie model programowy.
+%TODO TK: "sprzętowe" jw. 
 
-Wykorzystany algorytm grupowania JCSA (ang. \textit{Joint Color-Spatial-Axial clustering}) służy do estymacji parametrów modelu tła, grupowania pikseli i w efekcie wyodrębnienia regionów na obrazie. Sam model tła jest hybrydowy i składa się z rozkładów Gaussa oraz Watsona. Do wspomnianego wcześniej grupowania pikseli użyto algorytmu BSC (\textit{Bregman Soft Clustering}). W ostatniej fazie metody, czyli łączeniu poszczególnych regionów wykorzystano natomiast graf sąsiedztwa (ang. \textit{RAG -- Region Adjacency Graph}), przedstawiony proces polega na łączeniu odpowiednich wierzchołków w grafie.
+Wykorzystany algorytm grupowania JCSA (ang. \textit{Joint Color-Spatial-Axial clustering}) służy do estymacji parametrów modelu tła, grupowania pikseli i w efekcie wyodrębnienia regionów na obrazie. 
+Sam model tła jest hybrydowy i składa się z rozkładów Gaussa oraz Watsona. 
+Do wspomnianego wcześniej grupowania pikseli użyto algorytmu BSC (\textit{Bregman Soft Clustering}). 
+W ostatniej fazie metody, czyli łączeniu poszczególnych regionów wykorzystano natomiast graf sąsiedztwa (ang. \textit{RAG -- Region Adjacency Graph}), przedstawiony proces polega na łączeniu odpowiednich wierzchołków w grafie.
 
-Autorzy porównali zaprezentowany algorytm z innymi metodami bazującymi na obrazie głębi. Przeprowadzono testy dla różnych zestawów parametrów i zaproponowano odpowiednie wskaźniki jakości. Wykonane eksperymenty pozwoliły dobrać parametry algorytmu, natomiast uzyskane wyniki potwierdziły wyraźnie większą dokładność w stosunku do zaprezentowanych wcześniej rozwiązań.
+Autorzy porównali zaprezentowany algorytm z innymi metodami bazującymi na obrazie głębi. 
+Przeprowadzono testy dla różnych zestawów parametrów i zaproponowano odpowiednie wskaźniki jakości. 
+Wykonane eksperymenty pozwoliły dobrać parametry algorytmu, natomiast uzyskane wyniki potwierdziły wyraźnie większą dokładność w stosunku do zaprezentowanych wcześniej rozwiązań.
+%TODO TK: też by się to bardziej precyzyjnie przydało ująć.
 
-Publikacja \cite{Mattoccia_2015} przedstawia czujnik RGB--D w całości zrealizowany w układzie FPGA. System działa w czasie rzeczywistym z częstotliwością powyżej $30$Hz. Wykorzystano do tego celu układ FPGA Spartan 6, do akwizycji obrazu użyto natomiast czujników Aptina pracujących w rozdzielczości $800x480$ pikseli z częstotliwością $60$Hz. Komunikacja z sensorami odbywa się za pośrednictwem magistrali szeregowej $I^2C$.
+Publikacja \cite{Mattoccia_2015} przedstawia czujnik RGB--D w całości zrealizowany w układzie FPGA. 
+System działa w czasie rzeczywistym z częstotliwością powyżej $30$Hz. 
+Wykorzystano do tego celu układ FPGA Spartan 6, do akwizycji obrazu użyto natomiast czujników Aptina pracujących w rozdzielczości $800x480$ pikseli z częstotliwością $60$Hz. 
+Komunikacja z sensorami odbywa się za pośrednictwem magistrali szeregowej $I^2C$.
 
 W pierwszym kroku przeprowadzana jest operacja rektyfikacji obrazu, otrzymywany sygnał pochodzi z dwóch sensorów konieczne jest zatem znalezienie odpowiadających sobie punktów na obu obrazach. Następnym etapem jest zastosowanie transformaty Censusa i operacja dopasowania stereo. Ostatni krok to złożona filtracja obrazu wyjściowego. Na wyjście systemu przekazywany jest 16 bitowy obraz głębi, który następnie jest przesyłany do hosta za pośrednictwem portu USB. Warto zaznaczyć, że autorzy wykorzystali technikę generacji kodu HLS (ang. \textit{High--Level Synthesis}), dzięki temu większość funkcjonalności została zaimplementowana w języku C i~automatycznie przekonwertowana na VHDL.
+%TODO TK: ta publikacja pewnie będzie bez związku z tym konktretym arykułem.
 
 
-Autorzy publikacji \cite{Boghdady_2015} zaproponowali wykorzystanie układu GPU do akceleracji sprzętowej algorytmu wykorzystującego rozkłady Gaussa. Przedstawiony system służy do przetwarzania obrazu z kilku kamer jednocześnie. Uzyskane rezultaty nie były jednak zadowalające -- uzyskano przyspieszenie jedynie około 50 procent w stosunku do modelu programowego. W tym przypadku największym ograniczeniem była konieczność transferu dużej ilości danych (kilka obrazów) pomiędzy CPU a GPU. Warto zwrócić uwagę, że autorzy wykorzystali jeden z tańszych układów graficznych dostępnych na rynku -- GeForce GT 730. Aktualnie zdecydowana większość zintegrowanych GPU dysponuje porównywalną lub większą wydajnością. 
+%TODO TK: Tu też zdanie wprowadzenia, bo wczęsniej było RGB-D, a teraz jest GPU.
+
+Autorzy publikacji \cite{Boghdady_2015} zaproponowali wykorzystanie układu GPU do akceleracji sprzętowej algorytmu wykorzystującego rozkłady Gaussa. 
+Przedstawiony system służy do przetwarzania obrazu z kilku kamer jednocześnie. 
+Uzyskane rezultaty nie były jednak zadowalające -- uzyskano przyspieszenie jedynie około 50 procent w stosunku do modelu programowego. %TODO TK: w tym kontekście nie używałbym "modelu programowego" - tylko implementacji na CPU, czy referencyjnej...
+W tym przypadku największym ograniczeniem była konieczność transferu dużej ilości danych (kilka obrazów) pomiędzy CPU a GPU. 
+Warto zwrócić uwagę, że autorzy wykorzystali jeden z tańszych układów graficznych dostępnych na rynku -- GeForce GT 730. 
+Aktualnie zdecydowana większość zintegrowanych GPU dysponuje porównywalną lub większą wydajnością. 
 
  
 Praca \cite{Qin_2015} przedstawia implementację algorytmu ViBE z wykorzystaniem układu GPU.
-Zaproponowana metoda dodatkowo wykorzystuje uproszczoną metodę Gabor Wavelets do uzyskiwania informacji o krawędziach obrazu. Na tej podstawie odpowiednie piksele zostają wykorzystywane do aktualizacji modelu tła. 
-Autorzy dokonali optymalizacji metody, w taki sposób aby możliwe było pełne wykorzystanie potencjału układu GPU. W tym celu operacje dla poszczególnych pikseli wykonywane są niezależnie i mogą być wykonane równolegle. 
-Implementacja została przetestowana na platformie sprzętowej składającej się z procesora Intel Core Quad Q8400 CPU oraz procesora graficznego Nvidia GTX 650Ti. Wykorzystano obraz o rozdzielczości 960x540, uzyskana wydajność wynosi odpowiednio $1.8$ i $26$ klatek na sekundę dla CPU i GPU w najbardziej rozbudowanym wariancie algorytmu.
+Zaproponowana metoda dodatkowo wykorzystuje uproszczoną metodę Gabor Wavelets do uzyskiwania informacji o krawędziach obrazu. 
+Na tej podstawie odpowiednie piksele zostają wykorzystywane do aktualizacji modelu tła. 
+Autorzy dokonali optymalizacji metody, w taki sposób aby możliwe było pełne wykorzystanie potencjału układu GPU. 
+W tym celu operacje dla poszczególnych pikseli wykonywane są niezależnie i mogą być wykonane równolegle. 
+Implementacja została przetestowana na platformie sprzętowej składającej się z procesora Intel Core Quad Q8400 CPU oraz procesora graficznego Nvidia GTX 650Ti. 
+Wykorzystano obraz o rozdzielczości 960x540, uzyskana wydajność wynosi odpowiednio $1.8$ i $26$ klatek na sekundę dla CPU i GPU w najbardziej rozbudowanym wariancie algorytmu.
 
 
 Publikacja \cite{Song_2016} opisuje złożony system wizyjny, w którym układ GPU został wykorzystany do akceleracji algorytmu służącego do detekcji i indeksacji obiektów pierwszoplanowych. 
@@ -186,7 +215,10 @@ Oprócz wspomnianego układu GPU wykorzystano także czujnik temperatury.
 Oba urządzenia przy pomocy protokołu Zigbee komunikują się z inteligentnymi licznikami. 
 Na podstawie otrzymanych informacji inteligentne liczniki sterują klimatyzacją, oświetleniem i innymi urządzeniami elektrycznymi. 
 Jednym z przykładów użycia może być sytuacja gdy zmniejszy się liczba osób w pomieszczeniu temperatura może zostać obniżona. 
-Warto dodać, że całość może być także sterowana przy pomocy smartphona. Autorom udało się zapewnić oszczędność energii na poziomie 20-50 procent. Testy przeprowadzono na karcie graficznej GeForce GT 770 i osiągnięto wydajność na poziomie 34 klatek na sekundę w rozdzielczości $768x576$.
+Warto dodać, że całość może być także sterowana przy pomocy smartphona. 
+Autorom udało się zapewnić oszczędność energii na poziomie 20-50 procent. 
+Testy przeprowadzono na karcie graficznej GeForce GT 770 i osiągnięto wydajność na poziomie 34 klatek na sekundę w rozdzielczości $768x576$.
+%TODO TK: Tu więcej szczegółów o algorytmie, a mniej o aplikacji (choć jest ciekawa). W PhD (rozprawie) to może zostać.
 
 
 W pracy \cite{Guler_2016} autorzy zaimplementowali kilka algorytmów wizyjnych z wykorzystaniem GPU. 
