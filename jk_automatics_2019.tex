@@ -395,6 +395,7 @@ Implementacja po stronie hosta została napisana w języku skryptowym \textit{Py
 \subsection{Performance}
 \label{subsec:performance}
 
+Wydajność na poszczególnych platformach testowych została zmierzona dla różnych rozdzielczości.\textbf{TODO: tabelka z pomiarami}
 
 \textbf{TODO:}\\ 
 ->opis komunikacji pomiędzy hostem i GPU + rysunek,\\ 
@@ -410,6 +411,35 @@ biblioteka intela,\\
 
 
 \section{Evaluation}
+
+W celu przetestowania zaimplementowanych algorytmów przygotowano krótkie sekwencje testowe nagrane kamerą RGB--D. Do każdego nagrania został przygotowany \textit{ground truth}, czyli ręcznie anotowana maska obiektów. Wartość 255 oznacza, że dany piksel jest obiektem pierwszoplanowym, natomiast 0 oznacza tło. Wyjście w 100\% poprawnego algorytmu powinno pokrywać się z tą maską. 
+
+Do ewaluacji użyto metodologii znanej między innymi z portalu \textit{Change Detection} \cite{}. Porównują ramki wyjściowe testowanego algorytmu z odpowiadającymi im ramkami modelu wzorcowego, można wyznaczyć następujące współczynniki:
+
+\begin{enumerate}
+\item[TP] – liczba pikseli poprawnie zakwalifikowanych jako pierwszy plan (ang. true positive)
+\item[TN] – liczba pikseli poprawnie zakwalifikowanych jako tło (ang. true negative)
+\item[FN] – liczba pikseli błędnie zakwalifikowanych jako tło (ang. false negative)
+\item[FP] – liczba pikseli błędnie zakwalifikowanych jako pierwszy plan (ang. false positive)
+\end{enumerate}
+
+\noindent Na podstawie wyznaczonych współczynników oblicza się, 7 wskaźników jakości określających dokładność metody:
+
+\begin{enumerate}
+
+\item Recall (Re): $TP/(TP + FN)$
+\item Specificity (Spec) : $TN/(TN + FP)$
+\item False Positive Rate (FPR) : $FP/(FP + TN)$
+\item False Negative Rate (FNR) : $FN/(FN + TP)$
+\item Percentage of Wrong Classifications (PWC) : $100(FN + FP)/(TP + FN + FP + TN)$
+\item Precision (Pr): $TP/(TP + FP)$
+\item F-measure (F1): $2\frac{Pr*Re}{Pr+Rr}$
+
+\end{enumerate}
+
+Uzyskane wyniki porównano z oryginalnymi implementacjami algorytmów GMM \cite{} i PBAS \cite{}. \textbf{TODO: tabelka z wynikami}
+
+
 \textbf{TODO:}\\
  ->ewaluacja algorytmów, \\
  ->nagrane sekwencje testowe, \\
