@@ -238,24 +238,18 @@ W trakcie badań zostały zaimplementowane dwa różne algorytmy, wykorzystując
 \subsection{GMM algorithm with RGBD sensor}
 \label{subsec:gmm_rgbd}
 
-\textbf{TODO:}\\
-->co zostało zmienione w standardowej implementacji (osobny model tla dla skladowej D)\\
-->sposób finalnej klasyfikacji - zaktualizować\\
-
 Gaussian Mixture Models is one of the most commonly used method for background modelling. 
-In this approach each pixel is represented by $k$ Gaussian distributions characterized by three parameters ($\omega$, $\mu$, $\sigma^2$). 
+In this approach each pixel is represented by $k$ Gaussian distributions characterized by three parameters ($\omega$, $\mu$, $\sigma^2$). Modyfikacja algorytmu polega na wykorzystaniu mapy głębi obrazu. W tym celu oprócz standardowego modelu tła, używanego do przetwarzania kolorowego obrazu, został stworzony również osobny model wykorzystujący jedynie mapę głębi. Procedura inicjalizacji oraz następnie klasyfikacji piksela i aktualizacji modelu tła odbywa się tak samo jak w przypadku standardowego algorytmu. 
 
 $\omega$ is the normalized weight (range 0--1) of the Gaussian distribution.
 $\mu$ is the means vector of each colour component of a~particular pixel. 
 In the case of RGB colour space it can be defined as the vector of four numbers ($r_{mean}$, $g_{mean}$, $b_{mean}$).
-For the grayscale space it is a single number. 
+For the depth map it is a single number. 
 
 Finally, $\sigma^2$ is the variance of given Gaussian distribution -- a~single value is used for each colour component.
-Usually it is assumed that RGB components are independent, which allows to use 3 values instead of a~covariance matrix.
+Usually it is assumed that RGB components are independent, which allows to use 3 values instead of a~covariance matrix. Again in case of depth image, it will be a single value.
 It should be noticed that a~lot of varying implementations of the GMM algorithm have been proposed so far (cf. \cite{Bouwmans_2008}). 
 In this work, a~version based on the open source image processing library OpenCV was implemented. 
-
-
 
 
 The background model is initialized while processing the first frame of the video sequence. 
@@ -312,8 +306,23 @@ In the case of distributions, which do not match to pixel value, only the weight
 If instead none of the Gaussian distributions match the pixel, than new Gaussian is added (the same parameters as in the initialization phase are used). 
 The distribution with the lowest weight is replaced by the new one. 
 Finally, weights have to be normalized to range 0--1. 
-Assuming that the number of Gaussian distributions is $k=3$ and each parameter is 12 bits length, the total model size is 180 bits for each pixel.
 
+Opisany proces jest wykonywany osobno dla obu modeli tła, pierwszego bazującego na obrazie RGB i drugiego opartego o mapę głębi. Finalnie więc otrzymujemy dwa wyniki klasyfikacji, na podstawie których podejmowana jest ostateczna decyzja. Do dalszego przetwarzania wykorzystujemy funkcję gęstości prawdopodobieństwa zależną od wartości piksela $X_t$ w chwili $t$ opisaną wzorem (\ref{equ:gmm_density}):
+
+    \begin{equation}
+        \eta (X_t, \mu, \sigma) = \frac{1}{2\pi\sigma} e^{-\frac{d(X_t, \mu)^2}{2\sigma}} 
+    \label{equ:gmm_density}
+    \end{equation}
+
+Kolejny krok to obliczenie współczynnika prawdopodobieństwa, dla obu modeli tła, przez wykorzystanie funkcji $\eta$. Operacja ta została przedstawiona na rysunku \ref{fig:gmm_alg}. Wykorzystany parametr $s$ służy do przeskalowania otrzymanej gęstości prawdopodobieństwa i domyślnie wynosi $10000$. Obliczanie współczynnika prawdopodobieństwa, przedstawione na diagramie, przebiega tak samo dla obu modeli tła. Ostatecznie na podstawie iloczynu obu prawdopodobieństw, piksel jest ostatecznie klasyfikowany. \textbf{TODO: może co z tego dokładnie wynika}. 
+
+\begin{figure}[!t]
+	\begin{center}
+		\includegraphics[scale=0.50]{img/gmm_alg.png}
+		\caption{GMM -- computing probability and classification}
+		\label{fig:gmm_alg}
+	\end{center}
+\end{figure}
 
 \subsection{PBAS algorithm with RGBD sensor}
 \label{subsec:pbas_rgbd}
