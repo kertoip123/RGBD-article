@@ -115,8 +115,10 @@ Piotr Janus\footnote{AGH University of Science and Technology, Faculty of Electr
 \section{Introduction}
 \label{sec:introduction}
 
+Foreground object segmentation is one of the most important element of modern AVSS (\textit{Advanced Video Surveillance Systems}. It can be used in a variety of vision systems such as detection and tracking object or human behaviour analysis. Moreover it is a key element of application like abandoned luggage detection or forbidden zone protection. It might be applied in border control and airport systems as well.
+
 %ten akapit ok
-Segmentacja obiektów pierwszoplanowych jest jednym z kluczowych elementów wielu advanced video surveillance systems (AVSS). Jest używana w systemach detekcji i trackowania obiektów oraz human behaviour analysis. Oprócz tego jest również ważnym elementem takich aplikacji jak abadnoned luggage detection and forbidded zone protection. Systemy mogę być użyte w border control i airports).
+%Segmentacja obiektów pierwszoplanowych jest jednym z kluczowych elementów wielu advanced video surveillance systems (AVSS). Jest używana w systemach detekcji i trackowania obiektów oraz human behaviour analysis. Oprócz tego jest również ważnym elementem takich aplikacji jak abadnoned luggage detection and forbidded zone protection. Systemy mogę być użyte w border control i airports).
 
 The simplest group of foreground object detection algorithms
 is based on subtracting subsequent frames from a video
@@ -130,8 +132,15 @@ model is updated to incorporate changes in the scene like slow
 or fast light variations and movement of objects belonging to
 background (i.e a moved chair).
 
-\textbf{TODO} - dlaczego RGB--D jest lepsze, jeden akapit
+However, BGS approach has some serious limitations such as low adaptation to lighting changes, another weak point is the case when the color of background and foreground object are similar and the objects merge. This phenomenon is called color camouflage and in such a case is hard to retrieve foreground object properly. The main reason is that aforementioned techniques utilized human perception in some ways. Possibly image can be described in another color space (i.e. HSV or YCbCr) but it is still represented as a visible light, which is how people see it. Segmentation accuracy can be improved by using so called depth sensor. It extends the conventional image with depth map which provides the distance between particular pixel and sensor. This device is based on infrared projector and IR camera, projector shoots an irregular pattern of dots, which is invisible to humans, then IR camera is able to detect the infrared light bounced off from our subjects. The same technology is used by Kinect -- Microsoft gaming console. 
+
+%\textbf{TODO} - dlaczego RGB--D jest lepsze, jeden akapit
 %TODO TK raczej co daje informacja o D.
+%Takie algorytmy mają jednak pewne podstawowe ograniczenia takie jak słaba odporność na zmiany oświetlenia. Drugi słaby punkt to sytuacja gdy kolory tła i przedmiotów pierwszoplanowych są podobne i zlewają się ze sobą. W takiej sytuacji ciężko o prawidłową segmentację obiektów. Spowodowane to jest faktem, że przetwarzany obraz jest takim jak widzi go człowiek, ewentualnie może być przedstawiony w innej przestrzenii barw (np. HSV lub YCbCr). 
+
+%Do analizy można wykorzystać róznież tzw. mapę głębi obrazu. Rozszerza on standardowt obraz o informację o odległości danego piskela od kamery. Tego typu urządzenie działa na zasadzie czujnika na podczerwień, taką technologię wykorzystuje też konsola do gier \textit{Microsoft Kinect}. 
+
+
 %However, these BGS techniques have some fundamental
 %limitations because they utilized human perception (i.e.,
 %visible light) based color spaces such as the red, green, and
@@ -141,12 +150,25 @@ background (i.e a moved chair).
 %color camouflage situations and also sensitive to illumination
 %changes.
 
-%TODO opis co zostało zrobione
-W niniejszej pracy zaprezentowano rozszerzone wersje powszechnie wykorzystywanych algorytmów do segmentacji obiektów pierwszoplanowych. Opisane metody zostały dostosowane do przetwarzania danych otrzymanych ze standardowej kamery RGB oraz czujnika RGB-D. Skupiono się na algorytmach Gaussian Mixture Model (GMM) i Pixel-Based-Adaptive-Segmenter (PBAS), oprócz modelu programowego przygotowano także implementację sprzętową w układzie GPU z wykorzystaniem technologii CUDA. 
-%TODO TK nie wiem czy GPU można nazwywać sprzętową... raczej wbudowaną. \cite do metod.
-Do akwizycji obrazu użyto czujnika \textit{Intel Real--Sense} natomiast platforma sprzętowa to \textit{Nvidia Jetson}.
 
-Struktura niniejszego artykułu jest następująca, w rozdziale \ref{sec:prev_work} przedstawiono wcześniejsze prace związane z wykorzystaniem czujników RGB--D do segmentacji obiektów pierwszoplanowych. Sekcja \ref{} opisuje sposób przekazywania sygnału pochodzącego z czujnika RGB--D do platformy obliczeniowej oraz architekturę do przetwarzania obrazu w technologi CUDA. Sekcja \ref{} zawiera opis implementacji sprzętowej w układzie Nvidia Jetson. W ostatnim rozdziale zamieszczono podsumowanie oraz wskazano dalsze kierunki rozwoju aplikacji.   
+In this paper extended versions of the most commonly used background segmentation algorithms have been proposed. Described methods have been adjusted to image acquired from conventional RGB camera and depth sensor. The main contributions of this paper are:
+\begin{itemize}
+\item Extended version of Gaussian Mixture Model (GMM) and Pixel--Based--Adaptive--Segmenter (PBAS) algorithms adjusted to be used with conventional RGB image and depth sensor
+\item Embedded implementation of aforementioned algorithms on GPU using CUDA architecture
+\item Detailed performance comparison between standard (only RGB image) and RGD--D version
+\end{itemize}
+For image acquisition the sensor from \textit{Intel Real--Sense} series has been used, while computing platform comes from Nvidia Jetson family. Moreover, the difference of performance between embedded platform and PC equipped with dedicated Nvidia Touring GPU is presented.
+
+% The authors have focused on Gaussian Mixture Model (GMM) and Pixel--Based--Adaptive--Segmenter (PBAS) algorithms. In addition to software model, the embedded implementation, with the use of GPU and CUDA architecture, is presented as well.   The authors also verified how does the RGB--D sensor improve the accuracy of particular algorithm comparing to the original version. 
+
+%TODO opis co zostało zrobione
+%W niniejszej pracy zaprezentowano rozszerzone wersje powszechnie wykorzystywanych algorytmów do segmentacji obiektów pierwszoplanowych. Opisane metody zostały dostosowane do przetwarzania danych otrzymanych ze standardowej kamery RGB oraz czujnika RGB-D. Skupiono się na algorytmach Gaussian Mixture Model (GMM) i Pixel-Based-Adaptive-Segmenter (PBAS), oprócz modelu programowego przygotowano także implementację wbudowaną w układzie GPU z wykorzystaniem architektury CUDA. 
+%%TODO TK nie wiem czy GPU można nazwywać sprzętową... raczej wbudowaną. \cite do metod.
+%Do akwizycji obrazu użyto czujnika \textit{Intel Real--Sense} natomiast platforma sprzętowa to \textit{Nvidia Jetson}. Dodatkowo porównano wydajność opisanej platformy z komputerem klasy PC wyposażonym w dedykowaną kartę graficzną. Sprawdzono również jaki rzeczywiście wpływ na dokładność algorytmu ma wykorzystanie składowej głębi.
+
+The reminder of this paper is organized as follows. In section \ref{sec:prev_work} previous work related to use of RGB--D sensor for foreground object segmentation are briefly discussed. Section \ref{sec:algorithms} describes adjusted version of GMM and PBAS method. In section \ref{sec:hw_implementation} the designed embedded system is shown in presented. The evaluation of proposed algorithms is shown in section \ref{sec:evaluation}. The paper ends with a conclusion and future research directions indications.
+
+%Struktura niniejszego artykułu jest następująca, w rozdziale \ref{sec:prev_work} przedstawiono wcześniejsze prace związane z wykorzystaniem czujników RGB--D do segmentacji obiektów pierwszoplanowych. Sekcja \ref{} opisuje sposób przekazywania sygnału pochodzącego z czujnika RGB--D do platformy obliczeniowej oraz architekturę do przetwarzania obrazu w technologi CUDA. Sekcja \ref{} zawiera opis implementacji sprzętowej w układzie Nvidia Jetson. W ostatnim rozdziale zamieszczono podsumowanie oraz wskazano dalsze kierunki rozwoju aplikacji.   
 
 \section{Previous work}
 \label{sec:prev_work}
@@ -228,6 +250,7 @@ Do detekcji ruchu została wykorzystana metoda VSAM, jest to klasyczny algorytm 
 
 
 \section{Proposed algorithms}
+\label{sec:algorithms}
 %TODO tutaj opisać użyte algorytmy
 % GMM z modyfikacjami
 % PBAS z modyfikacjami
@@ -404,6 +427,7 @@ Ostatni etap to aktualizacja parametru opisującego prawdopodobieństwo dokonani
 	\end{equation}
 
 \section{Hardware implementation}
+\label{sec:hw_implementation}
 
 \subsection{Hardware used}
 \label{subsec:hw_used}
@@ -484,6 +508,7 @@ Nvidia Jetson Xavier  & XXfps    & XXfps    & XXfps & XXfps     \\ \hline
 
 
 \section{Evaluation}
+\label{sec:evaluation}
 
 W celu przetestowania zaimplementowanych algorytmów przygotowano krótkie sekwencje testowe nagrane kamerą RGB--D. Do każdego nagrania został przygotowany \textit{ground truth}, czyli ręcznie anotowana maska obiektów. Wartość 255 oznacza, że dany piksel jest obiektem pierwszoplanowym, natomiast 0 oznacza tło. Wyjście w 100\% poprawnego algorytmu powinno pokrywać się z tą maską. 
 
