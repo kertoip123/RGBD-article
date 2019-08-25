@@ -419,11 +419,28 @@ Algorytm zaimplementowano na 3 różnych platformach sprzętowych. Pierwszą jes
 
 Do implementacji sprzętowej wykorzystano opracowaną przez Nvidia architekturę CUDA ( Compute Unified Device Architecture). Dzięki temu implementacja może zostać uruchomiona na dowolnym układzie embedded GPU lub komputerze osobistym, które są wyposażone w procesor graficzny Nvidia. 
 
-W tego typu implementacji sprzętowej istotny jest podział zadań pomiędzy hostem i układem GPU oraz wykorzystanie pamięci współdzielonej. Host odpowiada za akwizycję obrazu i następnie skopiowanie go do pamięci współdzielonej z GPU. Oprócz tego po stronie hosta wykonywana jest również alokacja pamięci wykorzystywanej przez GPU, w związku z tym konieczne jest także zarezerwowanie pamięci dla modelu tła. 
+W tego typu implementacji sprzętowej istotny jest podział zadań pomiędzy hostem i układem GPU oraz wykorzystanie pamięci współdzielonej. Host odpowiada za akwizycję obrazu i następnie skopiowanie go do pamięci współdzielonej z GPU. Oprócz tego po stronie hosta wykonywana jest również alokacja pamięci wykorzystywanej przez GPU, w związku z tym konieczne jest także zarezerwowanie pamięci dla modelu tła. Komunikacja odbywa się po szynie PCI, zostało to pokazane na rysunku \ref{fig:cpu_host}. 
 
-Właściwy algorytm został w całości zaimplementowany na procesorze graficznym, gdzie dla każdego przetwarzanego piksela tworzony jest osobny wątek. Wyjściem algorytmu jest maska binarna przedstawiająca obiekty pierwszoplanowe, jest umieszczona w pamięci współdzielonej i następnie odczytana przez hosta i przekazana na wyjście. \textbf{TODO: rysunek}
 
-Implementacja po stronie hosta została napisana w języku skryptowym \textit{Python}. Do akwizycji obrazu wykorzystano bibliotekę \textit{pyrealsense2} udostępnioną przez firmę \textit{Intel}. Umożliwia ona odczyt zarówno obrazu RGB z kamery  jak i składowej głębi w czasie rzeczywistym. Obraz głębi jest przesyłany z czujnika w formacie zmiennoprzecinkowym, zatem przed przesłaniem go do GPU konieczna jest konwersja do formatu 8 bitów na pixel (większa wartość oznacza, że obiekt jest dalej od kamery). Ostatecznie każdy piksel obrazu jest zapisany na 32 bitach, po 8 bitów na każdą składową RGB oraz odległość od czujnika. 
+\begin{figure}[!t]
+	\begin{center}
+		\includegraphics[scale=0.50]{img/cpu_host.png}
+		\caption{Communication between host (cpu) and GPU}
+		\label{fig:cpu_host}
+	\end{center}
+\end{figure}
+
+Właściwy algorytm został w całości zaimplementowany na procesorze graficznym, gdzie dla każdego przetwarzanego piksela tworzony jest osobny wątek. Wyjściem algorytmu jest maska binarna przedstawiająca obiekty pierwszoplanowe, jest umieszczona w pamięci współdzielonej i następnie odczytana przez hosta i przekazana na wyjście. Proces wymiany informacji pomiędzy hostem i gpu został pokazany na rys. \ref{fig:gpu_alg}.
+
+Implementacja po stronie hosta została napisana w języku \textit{C++}. Do akwizycji obrazu wykorzystano udostępnione przez firmę \textit{Intel} SDK do obsługi sensorów RGB--D. Umożliwia ona odczyt zarówno obrazu RGB z kamery  jak i składowej głębi w czasie rzeczywistym. Obraz głębi jest przesyłany z czujnika w formacie zmiennoprzecinkowym, zatem przed przesłaniem go do GPU konieczna jest konwersja do formatu 8 bitów na pixel (większa wartość oznacza, że obiekt jest dalej od kamery). Ostatecznie każdy piksel obrazu jest zapisany na 32 bitach, po 8 bitów na każdą składową RGB oraz odległość od czujnika. 
+
+\begin{figure}[!t]
+	\begin{center}
+		\includegraphics[scale=0.50]{img/gpu_bs_alg.png}
+		\caption{}
+		\label{fig:gpu_alg}
+	\end{center}
+\end{figure}
 
 \subsection{GMM implementation}
 \label{subsec:gmm_implementation}
