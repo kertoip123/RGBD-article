@@ -453,17 +453,32 @@ Implementacja po stronie hosta została napisana w języku \textit{C++}. Do akwi
 \subsection{Performance}
 \label{subsec:performance}
 
-Wydajność na poszczególnych platformach testowych została zmierzona dla różnych rozdzielczości.\textbf{TODO: tabelka z pomiarami}
+Wydajność na poszczególnych platformach testowych została zmierzona dla różnych rozdzielczości.%\textbf{TODO: tabelka z pomiarami}
 
-\textbf{TODO:}\\ 
-->opis komunikacji pomiędzy hostem i GPU + rysunek,\\ 
-->standardowy algorytm segmetnacji obiektów (model tła, znajduje się w pamięci współdzielonej), \\
-->opisać co zrobione w OpenCV, a co w CUDA, problem podziału zadań 
-biblioteka intela,\\
+\begin{table}[t!]
+\caption{Performance}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+&     720p/480p  & XXXXXX & XXXXXX & XXXXXX \\ \hline
+Nvidia Jetson TX2  & XXfps & XXfps & XXfps & XXfps  \\ \hline
+i7 7700hq + GTX 1050   & XXfps & XXfps & XXfps & XXfps     \\ \hline
+i7 9700k + RTX 2070 & XXfps & XXfps &  XXfps & XXfps    \\ \hline
+Nvidia Jetson Xavier  & XXfps    & XXfps    & XXfps & XXfps     \\ \hline
+\end{tabular}
+\label{tab:performance_res}
+\end{table}
+
+\textbf{TODO:}\\
+-> zrzut ekranu\\
+%->opis komunikacji pomiędzy hostem i GPU + rysunek,\\ 
+%->standardowy algorytm segmetnacji obiektów (model tła, znajduje się w pamięci współdzielonej), \\
+%->opisać co zrobione w OpenCV, a co w CUDA, problem podziału zadań 
+%biblioteka intela,\\
 ->wykorzystane urządzenia - specyfikacja,\\
-->przekonwertowanie do tej samej rozdzielczości,\\
-->opis zastosowanych modułów,\\
-->w przypadku PBASa z indeksacją można dużo zrobić, np własna indeksacja w CUDA (-to moze w conclusion),\\
+%->przekonwertowanie do tej samej rozdzielczości,\\
+%->opis zastosowanych modułów,\\
+%->w przypadku PBASa z indeksacją można dużo zrobić, np własna indeksacja w CUDA (-to moze w conclusion),\\
 ->implementation result,\\
 ->wydajność
 
@@ -495,7 +510,25 @@ Do ewaluacji użyto metodologii znanej między innymi z portalu \textit{Change D
 
 \end{enumerate}
 
-Uzyskane wyniki porównano z oryginalnymi implementacjami algorytmów GMM \cite{} i PBAS \cite{}. \textbf{TODO: tabelka z wynikami}
+Uzyskane wyniki porównano z oryginalnymi implementacjami algorytmów GMM \cite{} i PBAS \cite{}. %\textbf{TODO: tabelka z wynikami}
+
+
+\begin{table}[t!]
+\caption{Evaluation}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+&     GMM RGB--D  & PBAS RGB--D & GMM \cite{} & PBAS \cite{} \\ \hline
+Re  & XX & XX & XX & XX  \\ \hline
+Spec   & XX & XX & XX & XX     \\ \hline
+FPR & XX & XX &  XX & XX    \\ \hline
+FNR  & XX    & XX    & XX & XX     \\ \hline
+PWC  & XX    & XX    & XX & XX     \\ \hline
+Pr  & XX    & XX    & XX & XX     \\ \hline
+F1  & XX    & XX    & XX & XX     \\ \hline
+\end{tabular}
+\label{tab:evaluation_res}
+\end{table}
 
 
 \textbf{TODO:}\\
