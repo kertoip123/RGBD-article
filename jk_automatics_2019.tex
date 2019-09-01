@@ -357,72 +357,102 @@ The next step is computing the probability factor for both background models, th
 \subsection{PBAS algorithm with RGBD sensor}
 \label{subsec:pbas_rgbd}
 
-Modeł tła składa się z dwóch części. Pierwsza z nich zawiera $N$ ostatnich zapamiętanych próbek (wartości pikseli). Zapisywane są zarówno składowe RGB każdego piksela jak i parametr \textit{depth}. Definiujemy ten zbiór jako $B(x_i)$, gdzie $x_i$ to aktualnie przetwarzany piksel obrazu, całość została opisana równaniem (\ref{equ:pbas_model_1}).
+The background model is composed of two parts. The first one is a buffer of $N$ last samples from the analyzed video sequence. Particular sample consists both RGB value and depth parameter. Let $x_i$ denote a particular pixel and $B(x_i)$ a buffer, it is described by equation (\ref{equ:pbas_model_1}).
+
+%Modeł tła składa się z dwóch części. Pierwsza z nich zawiera $N$ ostatnich zapamiętanych próbek (wartości pikseli). Zapisywane są zarówno składowe RGB każdego piksela jak i parametr \textit{depth}. Definiujemy ten zbiór jako $B(x_i)$, gdzie $x_i$ to aktualnie przetwarzany piksel obrazu, całość została opisana równaniem (\ref{equ:pbas_model_1}).
 
 	\begin{equation}
 		B(x_i)= \left\{ B_1(x_i), B_2(x_i), \dotsc, B_N(x_i) \right\}
 	\label{equ:pbas_model_1}	
 	\end{equation}
 
-Kolejnym elementem algorytmu jest okrąg $S(v(x,y)$ o środku w punkcie $v(x,y)$ i promieniu $R(x_i)$. Promień ten jest elementem modelu tła, aktualizowanym wraz z kolejnymi ramkami obrazu. Piksel jest uznawany za pierwszoplanowy jeżeli przynajmniej $\#_{min}$ próbek z modelu tła zawiera się wewnątrz takiego okręgu. Test dopasowania został opisany równaniem (\ref{equ:pbas_test}). Oznaczmy przez F maskę reprezentującą obiekty pierwszoplanowe (1 – piksel pierwszoplanowy, 0 – tło).
+The next component of background model is a sphere $S(v(x,y)$ of radius $R(x_i)$ centered at point $v(x,y)$. The radius value is updated with each new frame. Pixel is considered as foreground if at least $\#_{min}$ samples from background model belongs to the sphere. Let $F(x_i)$ denote the foreground mask (1 -- foreground pixel, 0 -- background), the match test is described by equation (\ref{equ:pbas_test}).
+
+%Kolejnym elementem algorytmu jest okrąg $S(v(x,y)$ o środku w punkcie $v(x,y)$ i promieniu $R(x_i)$. Promień ten jest elementem modelu tła, aktualizowanym wraz z kolejnymi ramkami obrazu. Piksel jest uznawany za pierwszoplanowy jeżeli przynajmniej $\#_{min}$ próbek z modelu tła zawiera się wewnątrz takiego okręgu. Test dopasowania został opisany równaniem (\ref{equ:pbas_test}). Oznaczmy przez F maskę reprezentującą obiekty pierwszoplanowe (1 – piksel pierwszoplanowy, 0 – tło).
 
 	\begin{equation}
 	    F(x_i) = 
 		\begin{dcases}
-    		1, & \text{gdy } \sum_{k=0}^{N} \{ d(I(x_i), B_k(x_i)) < R(x_i) \} < \#_{min} \\
-    		0, & \text{w pozostałych przypadkach} 
+    		1, & \text{if } \sum_{k=0}^{N} \{ d(I(x_i), B_k(x_i)) < R(x_i) \} < \#_{min} \\
+    		0, & \text{otherwise} 
 		\end{dcases}
 	\label{equ:pbas_test}	
 	\end{equation}
-\noindent Gdzie $d$ to funkcja odległości pomiędzy próbką z modelu tła, a aktualnym pikselem. 
+\noindent Where $d$ is a distance function between a sample from background model and actual pixel.	
+	
+%\noindent Gdzie $d$ to funkcja odległości pomiędzy próbką z modelu tła, a aktualnym pikselem. 
 
-Ponieważ każdy kanał analizowany jest osobno, funkcję odległości pomiędzy próbkami można zapisać bardzo prosto równaniem (\ref{equ:pbas_dist}), jest to po prostu moduł różnicy.
+Since each channel is processed separately, the distance function can be easily represented by equation (\ref{equ:pbas_dist}). The final decision is based on logical alternative of the result obtained for each channel. Let $F_R$, $F_G$, $F_B$, $F_D$ denote classification result for particular channels, final result is described by~(\ref{equ:pbas_final_mask}).
+
+%Ponieważ każdy kanał analizowany jest osobno, funkcję odległości pomiędzy próbkami można zapisać bardzo prosto równaniem (\ref{equ:pbas_dist}), jest to po prostu moduł różnicy.
+
 	\begin{equation}
 		d(I(x_i),B_k(x_i)) = | I(x_i) - B_k(x_i) |
 	\label{equ:pbas_dist}	
 	\end{equation}
 
-Każdy kanał przetwarzany jest osobno z wykorzystaniem niezależnego modelu tła. Finalna maska jest alternatywą logiczną wyników z poszczególnych kanałów, oznaczając poszczególne maski jako $F_R$, $F_G$, $F_B$, $F_D$ ostateczną klasyfikację możemy zapisać równaniem~(\ref{equ:pbas_final_mask}).
+%Każdy kanał przetwarzany jest osobno z wykorzystaniem niezależnego modelu tła. Finalna maska jest alternatywą logiczną wyników z poszczególnych kanałów, oznaczając poszczególne maski jako $F_R$, $F_G$, $F_B$, $F_D$ ostateczną klasyfikację możemy zapisać równaniem~(\ref{equ:pbas_final_mask}).
 
     \begin{equation}
-        F_{RGBD} = F_R \lor \lor F_G \lor F_B \lor F_D
+        F_{RGBD} = F_R \lor F_G \lor F_B \lor F_D
     \label{equ:pbas_final_mask}
     \end{equation}
 
-Kolejnym krokiem po przeprowadzeniu testu dopasowania i klasyfikacji piksela jest aktualizacja modelu tła. Zastosowano konserwatywne podejście, czyli aktualizowane są tylko piksele sklasyfikowane jako tło. Decyzja o aktualizacji podejmowana jest losowo. Prawdopodobieństwo jej wykonania wynosi $p = 1/T(x_i)$, gdzie parametr $T(x_i)$ jest dynamicznie aktualizowany i niezależny dla każdego piksela. Sama aktualizacja, polega na nadpisaniu, losowo wybranej próbki $B_k(x_i)$ z modelu aktualną wartością piksela $I(x_i)$. Dodatkowo, wybierany jest losowy piksela z otoczenia $3x3$ i losowo wybrana próbka z modelu mu odpowiadającego, jest nadpisywana wartością tego piksela.
+In the next step the background model is updated. Proposed algorithm uses conservative update approach, it means that the model is updated only if classified pixel is a part of background, otherwise updater is skipped. In addition to conventional conservative approach, update decision is also randomized. The probability of performing an update is given as $p = 1/T(x_i)$, where $T(x_i)$ is independent for each pixel and updated with background model. The actual update procedure is based on replacing a randomly selected sample from the background model $B_k(x_i)$ with the current pixel value $I(x_i)$. Moreover, a random pixel from a $3x3$ local context is selected and a randomly selected sample from its model is replaced by pixel value. 
 
-Niezależnie od aktualizacji części modelu zawierającej zapamiętane próbki dokonywana jest zmiana parametrów $R(x_i)$ i $T(x_i)$. W tym celu konieczne jest zdefiniowanie kolejnego elementu modelu tła, który zawiera zbiór minimalnych odległości pomiędzy próbką z modelu a aktualną wartością piksela. Zbiór ten został opisany równaniem (\ref{equ:pbas_model_2}). 
+
+%Kolejnym krokiem po przeprowadzeniu testu dopasowania i klasyfikacji piksela jest aktualizacja modelu tła. Zastosowano konserwatywne podejście, czyli aktualizowane są tylko piksele sklasyfikowane jako tło. Decyzja o aktualizacji podejmowana jest losowo. Prawdopodobieństwo jej wykonania wynosi $p = 1/T(x_i)$, gdzie parametr $T(x_i)$ jest dynamicznie aktualizowany i niezależny dla każdego piksela. Sama aktualizacja, polega na nadpisaniu, losowo wybranej próbki $B_k(x_i)$ z modelu aktualną wartością piksela $I(x_i)$. Dodatkowo, wybierany jest losowy piksela z otoczenia $3x3$ i losowo wybrana próbka z modelu mu odpowiadającego, jest nadpisywana wartością tego piksela.
+
+
+The update of $R(x_i)$ and $T(x_i)$ parameters is performed independently from the first part of background model. In this case the next component of the model has to be define -- the minimum distances between samples from the model and current pixel are defined as (\ref{equ:pbas_model_2}).
+
+%Niezależnie od aktualizacji części modelu zawierającej zapamiętane próbki dokonywana jest zmiana parametrów $R(x_i)$ i $T(x_i)$. W tym celu konieczne jest zdefiniowanie kolejnego elementu modelu tła, który zawiera zbiór minimalnych odległości pomiędzy próbką z modelu a aktualną wartością piksela. Zbiór ten został opisany równaniem (\ref{equ:pbas_model_2}). 
  
 	\begin{equation}
 		D(x_i)= \left\{ D_1(x_i), D_2(x_i) \dotsc, D_N(x_i) \right\}
 	\label{equ:pbas_model_2}	
 	\end{equation}
 
-Przedstawiony zbiór $D(x_i)$ aktualizowany jest razem ze zbiorem próbek. Nadpisywany jest jedynie element o indeksie $k$ dla którego dystans pomiędzy próbką i aktualnym pikselem jest najmniejsza, zostało to przedstawione równaniem (\ref{equ:pbas_d_min}).
+Presented set of values -- $D(x_i)$ is updated together with the set of samples $B(x_i)$. If a pixel is updated the minimal distance is found with equation (\ref{equ:pbas_d_min}) and the value $D_k(x_i)$ is updated with~$d_{min}(x_i)$.  
+
+%Przedstawiony zbiór $D(x_i)$ aktualizowany jest razem ze zbiorem próbek. Nadpisywany jest jedynie element o indeksie $k$ dla którego dystans pomiędzy próbką i aktualnym pikselem jest najmniejsza, zostało to przedstawione równaniem (\ref{equ:pbas_d_min}).
 	
 	\begin{equation}
 		d_{min}(x_i) = min_k d(I(x_i), B_k(x_i))
 	\label{equ:pbas_d_min}	
 	\end{equation}
 
-Do aktualizacji progu dopasowania, czyli parametru $R(x_i)$ konieczne jest wyznaczenie tzw. miary dynamiki tła, czyli inaczej wartości średniej ze zbioru $D(x_i)$. Finalny wzór na nową wartość progu przedstawia równanie (\ref{equ:pbas_r_update}). Warto dodać, że przyjęto także dolne ograniczenie wartości parametru, wynoszące $R_{low} = 18$.
+In $R(x_i)$ update procedure the background dynamics parameter is used, it is the mean value of $D(x_i)$, the whole procedure is described by equation (\ref{equ:pbas_r_update}). Additionally the decision threshold was limited by a lower bound $R_{low} = 18$.
+
+%Do aktualizacji progu dopasowania, czyli parametru $R(x_i)$ konieczne jest wyznaczenie tzw. miary dynamiki tła, czyli inaczej wartości średniej ze zbioru $D(x_i)$. Finalny wzór na nową wartość progu przedstawia równanie (\ref{equ:pbas_r_update}). Warto dodać, że przyjęto także dolne ograniczenie wartości parametru, wynoszące $R_{low} = 18$.
     
     \begin{equation}
 	    R(x_i) = 
 		\begin{dcases}
-    		R(x_i)(1-R_{inc/dec}), & \text{jeżeli } R(x_i) > \bar{d}_{min}(x_i)R_{sc} \\
-    		R(x_i)(1+R_{inc/dec}) & \text{w przeciwnym razie} 
+    		R(x_i)(1-R_{inc/dec}), & \text{if } R(x_i) > \bar{d}_{min}(x_i)R_{sc} \\
+    		R(x_i)(1+R_{inc/dec}) & \text{otherwise} 
 		\end{dcases}
 	\label{equ:pbas_r_update}	
 	\end{equation}
-Gdzie:
+
+Where:
 \begin{itemize}
-	\item[$R_{inc/dec}$] -- stały współczynnik aktualizacji (domyślnie $0.05$)
-	\item[$\bar{d}_{min}(x_i)$] -- wartość średnia zbioru $D(x_i)$
-	\item[$R_{sc}$] -- współczynnik skalowania (domyślnie $5$)
+	\item[$R_{inc/dec}$] -- constant updater rate ($0.05$ by default)
+	\item[$\bar{d}_{min}(x_i)$] -- the mean value of $D(x_i)$
+	\item[$R_{sc}$] -- scaling factor ($5$ by default)
 \end{itemize}
 
-Ostatni etap to aktualizacja parametru opisującego prawdopodobieństwo dokonania aktualizacji, czyli $T(x_i)$. Nowa wartość zależy od wyniku klasyfikacji piksela i została opisana równaniem (\ref{equ:pbas_t_update}). Przyjęto założenie, że parametr ten posiada także ograniczenie dolne jak i górne wynoszące odpowiednio $T_{low}=2$ i $T_{up}=200$. 
+%Gdzie:
+%\begin{itemize}
+%	\item[$R_{inc/dec}$] -- stały współczynnik aktualizacji (domyślnie $0.05$)
+%	\item[$\bar{d}_{min}(x_i)$] -- wartość średnia zbioru $D(x_i)$
+%	\item[$R_{sc}$] -- współczynnik skalowania (domyślnie $5$)
+%\end{itemize}
+
+The final step is update of learning rate parameter -- $T(x_i)$. The new value depends on classification result and it is described as (\ref{equ:pbas_t_update}). Additionally
+the learning rate is limited by a lower and upper bound. These constraints are $T_{low}=2$ and $T_{up}=200$ respectively.
+
+%Ostatni etap to aktualizacja parametru opisującego prawdopodobieństwo dokonania aktualizacji, czyli $T(x_i)$. Nowa wartość zależy od wyniku klasyfikacji piksela i została opisana równaniem (\ref{equ:pbas_t_update}). Przyjęto założenie, że parametr ten posiada także ograniczenie dolne jak i górne wynoszące odpowiednio $T_{low}=2$ i $T_{up}=200$. 
 
     \begin{equation}
 	    T(x_i) = 
