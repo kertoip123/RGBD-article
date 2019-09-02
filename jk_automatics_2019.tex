@@ -256,7 +256,9 @@ Do detekcji ruchu została wykorzystana metoda VSAM, jest to klasyczny algorytm 
 % PBAS z modyfikacjami
 % PBAS z segmentacją obiektów + modyfikacje 
 
-W trakcie badań zostały zaimplementowane dwa różne algorytmy, wykorzystujące zarówno obraz RGB pochodzący z kamery jak i obraz głębi. Pierwszym z nich jest rozszerzona wersja metody \textit{Gaussian Mixture Models}. Implementacja została przygotowana w oparciu o publikację \cite{}. Drugą metodą jest również zmodyfikowana wersja istniejącego już algorytmu \textit{Pixel Based Adaptive Segmenter} \cite{}. Oba algorytmy są zbliżone pod względem koncepcji modelu tła. Jest on niezależny dla każdego piksela i aktualizowany po przetworzeniu każdej ramki obrazu. W kolejnych podsekcjach przedstawiono szczegółowo koncepcję obu metod. 
+In this research, the authors implemented two different background subtraction algorithms. They benefit from both, RGB image from traditional camera and depth sensor as well. The fist algorithm is an extended version of \textit{Gaussian Mixture Models}. Its implementation is based of \cite{}. The second method is also modified version of existing algorithm -- \textit{Pixel Based Adaptive Segmenter} \cite{}. Both are very similar regarding the background model concept. It is independent for each pixel and dynamically updated after every frame. In the following subsections detailed description of both method is presented. 
+
+%W trakcie badań zostały zaimplementowane dwa różne algorytmy, wykorzystujące zarówno obraz RGB pochodzący z kamery jak i obraz głębi. Pierwszym z nich jest rozszerzona wersja metody \textit{Gaussian Mixture Models}. Implementacja została przygotowana w oparciu o publikację \cite{}. Drugą metodą jest również zmodyfikowana wersja istniejącego już algorytmu \textit{Pixel Based Adaptive Segmenter} \cite{}. Oba algorytmy są zbliżone pod względem koncepcji modelu tła. Jest on niezależny dla każdego piksela i aktualizowany po przetworzeniu każdej ramki obrazu. W kolejnych podsekcjach przedstawiono szczegółowo koncepcję obu metod. 
 
 \subsection{GMM algorithm with RGBD sensor}
 \label{subsec:gmm_rgbd}
@@ -457,8 +459,8 @@ the learning rate is limited by a lower and upper bound. These constraints are $
     \begin{equation}
 	    T(x_i) = 
 		\begin{dcases}
-    		T(x_i) + \frac{T_{inc}}{\bar{d}_{min}(x_i)}, & \text{jeżeli } F(x_i)=1 \\
-    		T(x_i) - \frac{T_{dec}}{\bar{d}_{min}(x_i)} & \text{w przeciwnym razie} 
+    		T(x_i) + \frac{T_{inc}}{\bar{d}_{min}(x_i)}, & \text{if } F(x_i)=1 \\
+    		T(x_i) - \frac{T_{dec}}{\bar{d}_{min}(x_i)} & \text{otherwise} 
 		\end{dcases}
 	\label{equ:pbas_t_update}	
 	\end{equation}
