@@ -188,27 +188,34 @@ Pierwsza z nich wykorzystuje standardowy zbiór obrazów zapisanych w przestrzen
 Dzięki takiemu rozwiązaniu można dużo efektywniej przeprowadzić taki proces dla obu sieci i następie połączyć je w jedną. 
 %TODO TK: Ogólnie opis tego trzeba jakoś inaczej przedstawić, bo to jest niejasne. Tak samo nie wiadomo co za bardzo daje to -D
 
-W pracy \cite{Hasnat_2014} został zaprezentowany kolejny, bazujący na obrazie z czujnika RGB--D, algorytm segmentacji obiektów pierwszoplanowych. 
-W tym przypadku zaproponowano metodę działającą bez nadzoru, przedstawiony algorytm składa się z mechanizmu grupowania w dziedzinie barw i przestrzeni oraz statystycznego łączenia obszarów. 
-Autorzy niestety nie przedstawili implementacji sprzętowej, przetestowano jedynie model programowy.
-%TODO TK: "sprzętowe" jw. 
+In the work \cite{Hasnat_2014} another foreground segmentation algorithm which is based on RGB--D sensor was presented. In this case algorithm works without supervision and consists of statistical model based on the color and the geometry of the scene. The authors presented only software model, without embedded or hardware implementation.
 
-Wykorzystany algorytm grupowania JCSA (ang. \textit{Joint Color-Spatial-Axial clustering}) służy do estymacji parametrów modelu tła, grupowania pikseli i w efekcie wyodrębnienia regionów na obrazie. 
-Sam model tła jest hybrydowy i składa się z rozkładów Gaussa oraz Watsona. 
-Do wspomnianego wcześniej grupowania pikseli użyto algorytmu BSC (\textit{Bregman Soft Clustering}). 
-W ostatniej fazie metody, czyli łączeniu poszczególnych regionów wykorzystano natomiast graf sąsiedztwa (ang. \textit{RAG -- Region Adjacency Graph}), przedstawiony proces polega na łączeniu odpowiednich wierzchołków w grafie.
+This model is used together with a JCSA \textit{Joint Color-Spatial-Axial} clustering method, which is responsible for estimation of background parameters, clustering the pixels and generating the set of regions in the image. The authors proposed hybrid model which uses multivariat Gaussian and Watson distributions. For clustering operation,   
+BSC (\textit{Bregman Soft Clustering}) method has been used. The last phase of the algorithm is region merging, for this purpose RAG (ang. \textit{Region Adjacency Graph}) is build. 
 
-Autorzy porównali zaprezentowany algorytm z innymi metodami bazującymi na obrazie głębi. 
-Przeprowadzono testy dla różnych zestawów parametrów i zaproponowano odpowiednie wskaźniki jakości. 
-Wykonane eksperymenty pozwoliły dobrać parametry algorytmu, natomiast uzyskane wyniki potwierdziły wyraźnie większą dokładność w stosunku do zaprezentowanych wcześniej rozwiązań.
+The authors compared presented method with another algorithms based on depth image.  Various test for different parameters were conducted, the set of quality indicators was also proposed. The evaluation methodology is based on NYU depth database \cite{}. Test results proved that detection quality is significantly improved comparing to previous solutions.
+
+%W pracy \cite{Hasnat_2014} został zaprezentowany kolejny, bazujący na obrazie z czujnika RGB--D, algorytm segmentacji obiektów pierwszoplanowych. 
+%W tym przypadku zaproponowano metodę działającą bez nadzoru, przedstawiony algorytm składa się z mechanizmu grupowania w dziedzinie barw i przestrzeni oraz statystycznego łączenia obszarów. 
+%Autorzy niestety nie przedstawili implementacji sprzętowej, przetestowano jedynie model programowy.
+%%TODO TK: "sprzętowe" jw. 
+
+%Wykorzystany algorytm grupowania JCSA (ang. \textit{Joint Color-Spatial-Axial clustering}) służy do estymacji parametrów modelu tła, grupowania pikseli i w efekcie wyodrębnienia regionów na obrazie. 
+%Sam model tła jest hybrydowy i składa się z rozkładów Gaussa oraz Watsona. 
+%Do wspomnianego wcześniej grupowania pikseli użyto algorytmu BSC (\textit{Bregman Soft Clustering}). 
+%W ostatniej fazie metody, czyli łączeniu poszczególnych regionów wykorzystano natomiast graf sąsiedztwa (ang. \textit{RAG -- Region Adjacency Graph}), przedstawiony proces polega na łączeniu odpowiednich wierzchołków w grafie.
+
+%Autorzy porównali zaprezentowany algorytm z innymi metodami bazującymi na obrazie głębi. 
+%Przeprowadzono testy dla różnych zestawów parametrów i zaproponowano odpowiednie wskaźniki jakości. 
+%Wykonane eksperymenty pozwoliły dobrać parametry algorytmu, natomiast uzyskane wyniki potwierdziły wyraźnie większą dokładność w stosunku do zaprezentowanych wcześniej rozwiązań.
 %TODO TK: też by się to bardziej precyzyjnie przydało ująć.
 
-Publikacja \cite{Mattoccia_2015} przedstawia czujnik RGB--D w całości zrealizowany w układzie FPGA. 
-System działa w czasie rzeczywistym z częstotliwością powyżej $30$Hz. 
-Wykorzystano do tego celu układ FPGA Spartan 6, do akwizycji obrazu użyto natomiast czujników Aptina pracujących w rozdzielczości $800x480$ pikseli z częstotliwością $60$Hz. 
-Komunikacja z sensorami odbywa się za pośrednictwem magistrali szeregowej $I^2C$.
-
-W pierwszym kroku przeprowadzana jest operacja rektyfikacji obrazu, otrzymywany sygnał pochodzi z dwóch sensorów konieczne jest zatem znalezienie odpowiadających sobie punktów na obu obrazach. Następnym etapem jest zastosowanie transformaty Censusa i operacja dopasowania stereo. Ostatni krok to złożona filtracja obrazu wyjściowego. Na wyjście systemu przekazywany jest 16 bitowy obraz głębi, który następnie jest przesyłany do hosta za pośrednictwem portu USB. Warto zaznaczyć, że autorzy wykorzystali technikę generacji kodu HLS (ang. \textit{High--Level Synthesis}), dzięki temu większość funkcjonalności została zaimplementowana w języku C i~automatycznie przekonwertowana na VHDL.
+%Publikacja \cite{Mattoccia_2015} przedstawia czujnik RGB--D w całości zrealizowany w układzie FPGA. 
+%System działa w czasie rzeczywistym z częstotliwością powyżej $30$Hz. 
+%Wykorzystano do tego celu układ FPGA Spartan 6, do akwizycji obrazu użyto natomiast czujników Aptina pracujących w rozdzielczości $800x480$ pikseli z częstotliwością $60$Hz. 
+%Komunikacja z sensorami odbywa się za pośrednictwem magistrali szeregowej $I^2C$.
+%
+%W pierwszym kroku przeprowadzana jest operacja rektyfikacji obrazu, otrzymywany sygnał pochodzi z dwóch sensorów konieczne jest zatem znalezienie odpowiadających sobie punktów na obu obrazach. Następnym etapem jest zastosowanie transformaty Censusa i operacja dopasowania stereo. Ostatni krok to złożona filtracja obrazu wyjściowego. Na wyjście systemu przekazywany jest 16 bitowy obraz głębi, który następnie jest przesyłany do hosta za pośrednictwem portu USB. Warto zaznaczyć, że autorzy wykorzystali technikę generacji kodu HLS (ang. \textit{High--Level Synthesis}), dzięki temu większość funkcjonalności została zaimplementowana w języku C i~automatycznie przekonwertowana na VHDL.
 %TODO TK: ta publikacja pewnie będzie bez związku z tym konktretym arykułem.
 
 
@@ -221,14 +228,16 @@ W tym przypadku największym ograniczeniem była konieczność transferu dużej 
 Warto zwrócić uwagę, że autorzy wykorzystali jeden z tańszych układów graficznych dostępnych na rynku -- GeForce GT 730. 
 Aktualnie zdecydowana większość zintegrowanych GPU dysponuje porównywalną lub większą wydajnością. 
 
+
+In the paper \cite{Qin_2015}, GPU implementation of ViBE algorithm is presented. Proposed method uses simplified Gabor Wavelets to calculate image edge information. Such an approach improves background model update procedure. The authors proposed fully optimized GPU implementation, so the processing speed is accelerated by parallel computing capacity of GPU. Algorithm was tested on PC equipped with \textit{Intel Core Quad Q8400} and \textit{Nvidia GTX 650Ti}. For $960x540$ resolution achieved performance is $1.8$ fps for CPU only and $26$ fps for GPU implementation.   
  
-Praca \cite{Qin_2015} przedstawia implementację algorytmu ViBE z wykorzystaniem układu GPU.
-Zaproponowana metoda dodatkowo wykorzystuje uproszczoną metodę Gabor Wavelets do uzyskiwania informacji o krawędziach obrazu. 
-Na tej podstawie odpowiednie piksele zostają wykorzystywane do aktualizacji modelu tła. 
-Autorzy dokonali optymalizacji metody, w taki sposób aby możliwe było pełne wykorzystanie potencjału układu GPU. 
-W tym celu operacje dla poszczególnych pikseli wykonywane są niezależnie i mogą być wykonane równolegle. 
-Implementacja została przetestowana na platformie sprzętowej składającej się z procesora Intel Core Quad Q8400 CPU oraz procesora graficznego Nvidia GTX 650Ti. 
-Wykorzystano obraz o rozdzielczości 960x540, uzyskana wydajność wynosi odpowiednio $1.8$ i $26$ klatek na sekundę dla CPU i GPU w najbardziej rozbudowanym wariancie algorytmu.
+%Praca \cite{Qin_2015} przedstawia implementację algorytmu ViBE z wykorzystaniem układu GPU.
+%Zaproponowana metoda dodatkowo wykorzystuje uproszczoną metodę Gabor Wavelets do uzyskiwania informacji o krawędziach obrazu. 
+%Na tej podstawie odpowiednie piksele zostają wykorzystywane do aktualizacji modelu tła. 
+%Autorzy dokonali optymalizacji metody, w taki sposób aby możliwe było pełne wykorzystanie potencjału układu GPU. 
+%W tym celu operacje dla poszczególnych pikseli wykonywane są niezależnie i mogą być wykonane równolegle. 
+%Implementacja została przetestowana na platformie sprzętowej składającej się z procesora Intel Core Quad Q8400 CPU oraz procesora graficznego Nvidia GTX 650Ti. 
+%Wykorzystano obraz o rozdzielczości 960x540, uzyskana wydajność wynosi odpowiednio $1.8$ i $26$ klatek na sekundę dla CPU i GPU w najbardziej rozbudowanym wariancie algorytmu.
 
 
 Publikacja \cite{Song_2016} opisuje złożony system wizyjny, w którym układ GPU został wykorzystany do akceleracji algorytmu służącego do detekcji i indeksacji obiektów pierwszoplanowych. 
@@ -242,11 +251,14 @@ Autorom udało się zapewnić oszczędność energii na poziomie 20-50 procent.
 Testy przeprowadzono na karcie graficznej GeForce GT 770 i osiągnięto wydajność na poziomie 34 klatek na sekundę w rozdzielczości $768x576$.
 %TODO TK: Tu więcej szczegółów o algorytmie, a mniej o aplikacji (choć jest ciekawa). W PhD (rozprawie) to może zostać.
 
+In the papaer \cite{Guler_2016}, authors presented a few vision algorithms accelerated by GPU. Proposed methods affect the following areas: motion detection, camera sabotage detection (moved camera, out-of-focus camera, covered camera detection), abandoned object detection, object tracking algorithm. GPU acceleration gave almost 22 times increase in performance, tests were conducted using \textit{NVIDIA Tesla C2075} GPU based on Kepler architecture. 
 
-W pracy \cite{Guler_2016} autorzy zaimplementowali kilka algorytmów wizyjnych z wykorzystaniem GPU. 
-Wśród zrealizowanych metod znalazły się detekcja ruchu, wykrywanie sabotażu kamery, wykrywanie porzuconego bagażu oraz śledzenie obiektów. Dzięki akceleracji GPU udało się uzyskać niemalże 22-krotne przyspieszenie w stosunku do CPU. Do testów użyto procesora NVIDIA Tesla C2075 z architekturą Keplera. 
+For move detection, VSAM (\textit{Video Surveillance and Monitoring}) was used. It is adaptive approach which updates background model with each new frame. The similar approach has been used in camera sabotage detection algorithm. This method compares input image with background and computes their histograms. For protection against moving camera, background images from two subsequent frames are compared. Reduction algorithm is used compute difference between frames. Abandoned object detection algorithm is based on GMM and labeling method. In addition, motion detection also uses Gaussian Mixture Models.
 
-Do detekcji ruchu została wykorzystana metoda VSAM, jest to klasyczny algorytm wykorzystujący adaptacyjny model  tła, osobny dla poszczególnych pikseli. Model ten jest aktualizowany wraz z każdą kolejną ramką na podstawie wyniku klasyfikacji. Opisana implementacja została także wykorzystana w metodzie służącej do wykrycia sabotażu kamery. Algorytm ten opiera się na porównaniu obraz wejściowego z obrazem tła i wyznaczeniu ich histogramów. Z kolei w celu detekcji przesunięcia kamery porównywane są obrazy tła z dwóch kolejnych ramek. W przypadku, gdy jeden obraz jest przesunięty względem drugiego o dany wektor, oznacza to, że kamera została przesunięta. Detekcja porzuconego obiektu została zaimplementowana z wykorzystaniem algorytmu GMM do segmentacji tła oraz metody indeksacji. Finalnie analiza wyszczególnionych obszarów pozwala wyszukać obiekty statyczne. Dodatkowo autorzy wykorzystali metodę GMM również w algorytmie śledzenia obiektów.
+%W pracy \cite{Guler_2016} autorzy zaimplementowali kilka algorytmów wizyjnych z wykorzystaniem GPU. 
+%Wśród zrealizowanych metod znalazły się detekcja ruchu, wykrywanie sabotażu kamery, wykrywanie porzuconego bagażu oraz śledzenie obiektów. Dzięki akceleracji GPU udało się uzyskać niemalże 22-krotne przyspieszenie w stosunku do CPU. Do testów użyto procesora NVIDIA Tesla C2075 z architekturą Keplera. 
+
+%Do detekcji ruchu została wykorzystana metoda VSAM, jest to klasyczny algorytm wykorzystujący adaptacyjny model  tła, osobny dla poszczególnych pikseli. Model ten jest aktualizowany wraz z każdą kolejną ramką na podstawie wyniku klasyfikacji. Opisana implementacja została także wykorzystana w metodzie służącej do wykrycia sabotażu kamery. Algorytm ten opiera się na porównaniu obraz wejściowego z obrazem tła i wyznaczeniu ich histogramów. Z kolei w celu detekcji przesunięcia kamery porównywane są obrazy tła z dwóch kolejnych ramek. W przypadku, gdy jeden obraz jest przesunięty względem drugiego o dany wektor, oznacza to, że kamera została przesunięta. Detekcja porzuconego obiektu została zaimplementowana z wykorzystaniem algorytmu GMM do segmentacji tła oraz metody indeksacji. Finalnie analiza wyszczególnionych obszarów pozwala wyszukać obiekty statyczne. Dodatkowo autorzy wykorzystali metodę GMM również w algorytmie śledzenia obiektów.
 
 
 \section{Proposed algorithms}
