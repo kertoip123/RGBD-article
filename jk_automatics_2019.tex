@@ -166,7 +166,7 @@ For image acquisition the sensor from \textit{Intel Real--Sense} series has been
 %%TODO TK nie wiem czy GPU można nazwywać sprzętową... raczej wbudowaną. \cite do metod.
 %Do akwizycji obrazu użyto czujnika \textit{Intel Real--Sense} natomiast platforma sprzętowa to \textit{Nvidia Jetson}. Dodatkowo porównano wydajność opisanej platformy z komputerem klasy PC wyposażonym w dedykowaną kartę graficzną. Sprawdzono również jaki rzeczywiście wpływ na dokładność algorytmu ma wykorzystanie składowej głębi.
 
-The reminder of this paper is organized as follows. In section \ref{sec:prev_work} previous work related to use of RGB--D sensor for foreground object segmentation are briefly discussed. Section \ref{sec:algorithms} describes adjusted version of GMM and PBAS method. In section \ref{sec:hw_implementation} the designed embedded system is shown in presented. The evaluation of proposed algorithms is shown in section \ref{sec:evaluation}. The paper ends with a conclusion and future research directions indications.
+The reminder of this paper is organized as follows. In section \ref{sec:prev_work} previous work related to use of RGB--D sensor for foreground object segmentation are briefly discussed, a few papers about acceleration using GPU are also presented. Section \ref{sec:algorithms} describes adjusted version of GMM and PBAS method. In section \ref{sec:hw_implementation} the designed embedded system is shown in presented. The evaluation of proposed algorithms is shown in section \ref{sec:evaluation}. The paper ends with a conclusion and future research directions indications.
 
 %Struktura niniejszego artykułu jest następująca, w rozdziale \ref{sec:prev_work} przedstawiono wcześniejsze prace związane z wykorzystaniem czujników RGB--D do segmentacji obiektów pierwszoplanowych. Sekcja \ref{} opisuje sposób przekazywania sygnału pochodzącego z czujnika RGB--D do platformy obliczeniowej oraz architekturę do przetwarzania obrazu w technologi CUDA. Sekcja \ref{} zawiera opis implementacji sprzętowej w układzie Nvidia Jetson. W ostatnim rozdziale zamieszczono podsumowanie oraz wskazano dalsze kierunki rozwoju aplikacji.   
 
@@ -174,18 +174,21 @@ The reminder of this paper is organized as follows. In section \ref{sec:prev_wor
 \label{sec:prev_work}
 
 %TODO TK Tu musi być jakieś "zagajnie", a nie tak od razu i jeszcze dość niefortunnie (bo inne od czego ?)
+Over the years, several solutions for foreground object segmentation with the use of RGB--D sensor have been proposed. Sometimes researcher are also focused on improving performance instead of developing new algorithms. In such a case using GPU is a promising approach. The following section presents previous work related with both RGB--D sensors and GPU implementations.
+
+Authors in \cite{Hoffman_2016} proposed foreground segmentation algorithm which uses  convolutional neural network (CNN). Training data set consists both RGB and depth map images. The main contribution of that paper is improved training process. In order to produce more accurate detection, hybrid system with two CNN working in parallel is proposed. The first one uses conventional RGB image while second network is based on depth map only. The key element of this algorithm is so called mid-level fusion technique between RGB and depth CNNs. According to tests conducted by authors, the use of depth map results in an average 21\% relative improvement in detection performance over an RGB-only network.
 
 %TODO krócej
-Autorzy publikacji \cite{Hoffman_2016} przedstawili inne, bardzo ciekawe i niestandardowe podejście do segmentacji obiektów pierwszoplanowych. 
-Zaprezentowany algorytm zakłada wykorzystanie sieci neuronowa CNN. 
-Do uczenia sieci użyto, oprócz annotowanych danych uczących, także czujnik RGB--D, czyli urządzenie generujące obraz wraz z mapami głębi. 
+%Autorzy publikacji \cite{Hoffman_2016} przedstawili inne, bardzo ciekawe i niestandardowe podejście do segmentacji obiektów pierwszoplanowych. 
+%Zaprezentowany algorytm zakłada wykorzystanie sieci neuronowa CNN. 
+%Do uczenia sieci użyto, oprócz annotowanych danych uczących, także czujnik RGB--D, czyli urządzenie generujące obraz wraz z mapami głębi. 
 
-Oczywiście istnieje wiele metod segmentacji obiektów pierwszoplanowych, wykorzystujących sieci nieuronowe, w tym przypadku autorzy skupili się na usprawnieniu procesu uczenia. 
-Standardowo w tego typu algorytmach, sieć uczona jest na podstawie annotowanych obrazów w przestrzeni RGB. 
-Zbiory testowe można podzielić na wiele kategorii, jednak uzyskany w ten sposób dokładność detekcji nie zawsze jest zadowalająca. 
-W związku z tym autorzy przedstawili hybrydowy system, w którym równolegle uczone są dwie sieci. 
-Pierwsza z nich wykorzystuje standardowy zbiór obrazów zapisanych w przestrzeni RGB, natomiast w drugiej sieci wykorzystywana jest mapa głębi tego obrazu. W zaproponowanym podejściu kluczową rolę odgrywa wymiana informacji pomiędzy obiema sieciami CNN w trakcie procesu uczenia. 
-Dzięki takiemu rozwiązaniu można dużo efektywniej przeprowadzić taki proces dla obu sieci i następie połączyć je w jedną. 
+%Oczywiście istnieje wiele metod segmentacji obiektów pierwszoplanowych, wykorzystujących sieci nieuronowe, w tym przypadku autorzy skupili się na usprawnieniu procesu uczenia. 
+%Standardowo w tego typu algorytmach, sieć uczona jest na podstawie annotowanych obrazów w przestrzeni RGB. 
+%Zbiory testowe można podzielić na wiele kategorii, jednak uzyskany w ten sposób dokładność detekcji nie zawsze jest zadowalająca. 
+%W związku z tym autorzy przedstawili hybrydowy system, w którym równolegle uczone są dwie sieci. 
+%Pierwsza z nich wykorzystuje standardowy zbiór obrazów zapisanych w przestrzeni RGB, natomiast w drugiej sieci wykorzystywana jest mapa głębi tego obrazu. W zaproponowanym podejściu kluczową rolę odgrywa wymiana informacji pomiędzy obiema sieciami CNN w trakcie procesu uczenia. 
+%Dzięki takiemu rozwiązaniu można dużo efektywniej przeprowadzić taki proces dla obu sieci i następie połączyć je w jedną. 
 %TODO TK: Ogólnie opis tego trzeba jakoś inaczej przedstawić, bo to jest niejasne. Tak samo nie wiadomo co za bardzo daje to -D
 
 In the work \cite{Hasnat_2014} another foreground segmentation algorithm which is based on RGB--D sensor was presented. In this case algorithm works without supervision and consists of statistical model based on the color and the geometry of the scene. The authors presented only software model, without embedded or hardware implementation.
@@ -193,7 +196,7 @@ In the work \cite{Hasnat_2014} another foreground segmentation algorithm which i
 This model is used together with a JCSA \textit{Joint Color-Spatial-Axial} clustering method, which is responsible for estimation of background parameters, clustering the pixels and generating the set of regions in the image. The authors proposed hybrid model which uses multivariat Gaussian and Watson distributions. For clustering operation,   
 BSC (\textit{Bregman Soft Clustering}) method has been used. The last phase of the algorithm is region merging, for this purpose RAG (ang. \textit{Region Adjacency Graph}) is build. 
 
-The authors compared presented method with another algorithms based on depth image.  Various test for different parameters were conducted, the set of quality indicators was also proposed. The evaluation methodology is based on NYU depth database \cite{}. Test results proved that detection quality is significantly improved comparing to previous solutions.
+Authors compared presented method with another algorithms based on depth image.  Various test for different parameters were conducted, the set of quality indicators was also proposed. The evaluation methodology is based on NYU depth database \cite{}. Test results proved that detection quality is significantly improved comparing to previous solutions.
 
 %W pracy \cite{Hasnat_2014} został zaprezentowany kolejny, bazujący na obrazie z czujnika RGB--D, algorytm segmentacji obiektów pierwszoplanowych. 
 %W tym przypadku zaproponowano metodę działającą bez nadzoru, przedstawiony algorytm składa się z mechanizmu grupowania w dziedzinie barw i przestrzeni oraz statystycznego łączenia obszarów. 
@@ -221,15 +224,17 @@ The authors compared presented method with another algorithms based on depth ima
 
 %TODO TK: Tu też zdanie wprowadzenia, bo wczęsniej było RGB-D, a teraz jest GPU.
 
-Autorzy publikacji \cite{Boghdady_2015} zaproponowali wykorzystanie układu GPU do akceleracji sprzętowej algorytmu wykorzystującego rozkłady Gaussa. 
-Przedstawiony system służy do przetwarzania obrazu z kilku kamer jednocześnie. 
-Uzyskane rezultaty nie były jednak zadowalające -- uzyskano przyspieszenie jedynie około 50 procent w stosunku do modelu programowego. %TODO TK: w tym kontekście nie używałbym "modelu programowego" - tylko implementacji na CPU, czy referencyjnej...
-W tym przypadku największym ograniczeniem była konieczność transferu dużej ilości danych (kilka obrazów) pomiędzy CPU a GPU. 
-Warto zwrócić uwagę, że autorzy wykorzystali jeden z tańszych układów graficznych dostępnych na rynku -- GeForce GT 730. 
-Aktualnie zdecydowana większość zintegrowanych GPU dysponuje porównywalną lub większą wydajnością. 
+In the article \cite{Boghdady_2015}, GPU acceleration for Gaussian based foreground segmentation algorithm was proposed. That system is able to handle multiple cameras simultaneously. Unfortunately, the achieved increase of performance is not satisfying. Presented GPU implementation is only about 50 percent faster than reference model. In this case, according to authors knowledge, transferring huge amount of data between CPU and GPU was a bottleneck. It should be also noted that the used graphic processing unit was one of low-end model available on the market at that time -- GeForce GT 730. Nowadays, the most of integrated GPUs are more powerful.  
+
+%Autorzy publikacji \cite{Boghdady_2015} zaproponowali wykorzystanie układu GPU do akceleracji sprzętowej algorytmu wykorzystującego rozkłady Gaussa. 
+%Przedstawiony system służy do przetwarzania obrazu z kilku kamer jednocześnie. 
+%Uzyskane rezultaty nie były jednak zadowalające -- uzyskano przyspieszenie jedynie około 50 procent w stosunku do modelu programowego. %TODO TK: w tym kontekście nie używałbym "modelu programowego" - tylko implementacji na CPU, czy referencyjnej...
+%W tym przypadku największym ograniczeniem była konieczność transferu dużej ilości danych (kilka obrazów) pomiędzy CPU a GPU. 
+%Warto zwrócić uwagę, że autorzy wykorzystali jeden z tańszych układów graficznych dostępnych na rynku -- GeForce GT 730. 
+%Aktualnie zdecydowana większość zintegrowanych GPU dysponuje porównywalną lub większą wydajnością. 
 
 
-In the paper \cite{Qin_2015}, GPU implementation of ViBE algorithm is presented. Proposed method uses simplified Gabor Wavelets to calculate image edge information. Such an approach improves background model update procedure. The authors proposed fully optimized GPU implementation, so the processing speed is accelerated by parallel computing capacity of GPU. Algorithm was tested on PC equipped with \textit{Intel Core Quad Q8400} and \textit{Nvidia GTX 650Ti}. For $960x540$ resolution achieved performance is $1.8$ fps for CPU only and $26$ fps for GPU implementation.   
+In the paper \cite{Qin_2015}, GPU implementation of ViBE algorithm was presented. Proposed method uses simplified Gabor Wavelets to calculate image edge information. Such an approach improves background model update procedure. The authors proposed fully optimized GPU implementation, so the processing speed is accelerated by parallel computing capacity of GPU. Algorithm was tested on PC equipped with \textit{Intel Core Quad Q8400} and \textit{Nvidia GTX 650Ti}. For $960x540$ resolution achieved performance is $1.8$ fps for CPU only and $26$ fps for GPU implementation.   
  
 %Praca \cite{Qin_2015} przedstawia implementację algorytmu ViBE z wykorzystaniem układu GPU.
 %Zaproponowana metoda dodatkowo wykorzystuje uproszczoną metodę Gabor Wavelets do uzyskiwania informacji o krawędziach obrazu. 
@@ -239,16 +244,17 @@ In the paper \cite{Qin_2015}, GPU implementation of ViBE algorithm is presented.
 %Implementacja została przetestowana na platformie sprzętowej składającej się z procesora Intel Core Quad Q8400 CPU oraz procesora graficznego Nvidia GTX 650Ti. 
 %Wykorzystano obraz o rozdzielczości 960x540, uzyskana wydajność wynosi odpowiednio $1.8$ i $26$ klatek na sekundę dla CPU i GPU w najbardziej rozbudowanym wariancie algorytmu.
 
-
-Publikacja \cite{Song_2016} opisuje złożony system wizyjny, w którym układ GPU został wykorzystany do akceleracji algorytmu służącego do detekcji i indeksacji obiektów pierwszoplanowych. 
-Zaproponowany system służy do inteligentnego, automatycznego zarządzania energią w pomieszczeniu. 
-Oprócz wspomnianego układu GPU wykorzystano także czujnik temperatury. 
-Oba urządzenia przy pomocy protokołu Zigbee komunikują się z inteligentnymi licznikami. 
-Na podstawie otrzymanych informacji inteligentne liczniki sterują klimatyzacją, oświetleniem i innymi urządzeniami elektrycznymi. 
-Jednym z przykładów użycia może być sytuacja gdy zmniejszy się liczba osób w pomieszczeniu temperatura może zostać obniżona. 
-Warto dodać, że całość może być także sterowana przy pomocy smartphona. 
-Autorom udało się zapewnić oszczędność energii na poziomie 20-50 procent. 
-Testy przeprowadzono na karcie graficznej GeForce GT 770 i osiągnięto wydajność na poziomie 34 klatek na sekundę w rozdzielczości $768x576$.
+%In the work \cite{Song_2016}, the complex vision system is described. The authors proposed to use GPU to accelerate algorithm for foreground object detection and object labeling. The use case for presented system is indoor sustainable energy management. 
+%
+%Publikacja \cite{Song_2016} opisuje złożony system wizyjny, w którym układ GPU został wykorzystany do akceleracji algorytmu służącego do detekcji i indeksacji obiektów pierwszoplanowych. 
+%Zaproponowany system służy do inteligentnego, automatycznego zarządzania energią w pomieszczeniu. 
+%Oprócz wspomnianego układu GPU wykorzystano także czujnik temperatury. 
+%Oba urządzenia przy pomocy protokołu Zigbee komunikują się z inteligentnymi licznikami. 
+%Na podstawie otrzymanych informacji inteligentne liczniki sterują klimatyzacją, oświetleniem i innymi urządzeniami elektrycznymi. 
+%Jednym z przykładów użycia może być sytuacja gdy zmniejszy się liczba osób w pomieszczeniu temperatura może zostać obniżona. 
+%Warto dodać, że całość może być także sterowana przy pomocy smartphona. 
+%Autorom udało się zapewnić oszczędność energii na poziomie 20-50 procent. 
+%Testy przeprowadzono na karcie graficznej GeForce GT 770 i osiągnięto wydajność na poziomie 34 klatek na sekundę w rozdzielczości $768x576$.
 %TODO TK: Tu więcej szczegółów o algorytmie, a mniej o aplikacji (choć jest ciekawa). W PhD (rozprawie) to może zostać.
 
 In the papaer \cite{Guler_2016}, authors presented a few vision algorithms accelerated by GPU. Proposed methods affect the following areas: motion detection, camera sabotage detection (moved camera, out-of-focus camera, covered camera detection), abandoned object detection, object tracking algorithm. GPU acceleration gave almost 22 times increase in performance, tests were conducted using \textit{NVIDIA Tesla C2075} GPU based on Kepler architecture. 
