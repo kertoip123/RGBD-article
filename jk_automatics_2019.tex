@@ -489,18 +489,27 @@ the learning rate is limited by a lower and upper bound. These constraints are $
 \subsection{Hardware used}
 \label{subsec:hw_used}
 
-Do akwizycji obrazu użyto czujników RGB--D firmy Intel: REAL SENSE Depth Camera D415 oraz REAL SENSE Depth Camera D435. Zapewniają
-one obraz w maksymalnej rozdzielczości FULL HD (1920 x 1080 pikseli) oraz mapę głębi w rozdzielczości HD (1280 x 720 pikseli). Sam czujnik umożliwia rozróżnianie obiektów w odległości od 20 centymetrów do 10 metrów od obiektywu.
+For image acquisition Intel RealSense Depth Cameras D415 and D435 have been used. They provide the Full HD resolution ($1920x1080$) for RGB image and HD resolution ($1280x720$) for depth map. Those sensors are able to distinguish objects at a distance of 20 centimeters to 10 meters from camera~lens.
 
-Algorytm zaimplementowano na 3 różnych platformach sprzętowych. Pierwszą jest układ embedded GPU NVIDIA Jetson TX2 wyposażony w procesor ARM i układ GPU. Druga platforma to laptop wyposażony w procesor intel core i7-7700 i kartę graficzną Geforce GTX 1050m. Najwydajniejsza z testowanych platforma to komputer PC z intel Core i7-9700k i NVIDIA Geforce RTX 2070.
-\textbf{TODO: dokonczyc wstep}
+%Do akwizycji obrazu użyto czujników RGB--D firmy Intel: REAL SENSE Depth Camera D415 oraz REAL SENSE Depth Camera D435. Zapewniają
+%one obraz w maksymalnej rozdzielczości FULL HD (1920 x 1080 pikseli) oraz mapę głębi w rozdzielczości HD (1280 x 720 pikseli). Sam czujnik umożliwia rozróżnianie obiektów w odległości od 20 centymetrów do 10 metrów od obiektywu.
+
+%Presented algorithms were implemented on three different platform. The first one is embedded GPU, NIVIDIA Jetson TX2, it consists of ARM based CPU and GPU. The second platform is notebook with Intel Core i7--7700 processor and mobile version of Geforce GTX 1050. 
+
+For hardware implementation 3 different platforms were used. The first one is Nvidia Jetson TX2 -- embedded GPU platform, equipped with 64-bits ARM Cortex A57 CPU and NVIDIA Maxwell GPU with 256 CUDA cores. The second platform is laptop with Intel Core i7--7700HQ (4 cores/8 threads @ 2.8 GHz) and NVIDIA Geforce GTX 1050 GPU based on Pascal architecture. Last but not least is PC consisting of Intel Core i7--9700k (8 cores @ 4.5 GHz) and NVIDIA RTX 2070 (Touring architecture).
+
+%Algorytm zaimplementowano na 3 różnych platformach sprzętowych. Pierwszą jest układ embedded GPU NVIDIA Jetson TX2 wyposażony w procesor ARM i układ GPU. Druga platforma to laptop wyposażony w procesor intel core i7-7700 i kartę graficzną Geforce GTX 1050m. Najwydajniejsza z testowanych platforma to komputer PC z intel Core i7-9700k i NVIDIA Geforce RTX 2070.
+
+Most calculations are made with the use of GPU, for this purpose the CUDA (\textit{Copute Unififed Device Architecture}) platform was used. It is developed by NVIDIA and can be used only with GPUs based on their architecture. The CUDA itself is parallel computing platform with API which allows to use NVIDIA graphics processing unit for general purpose processing. Thanks to this approach we can integrate our implementation with different computing platforms like laptops, PCs or embedded GPUs without much effort. The only requirement is to use NVIDIA GPU. 
+
+%\textbf{TODO: dokonczyc wstep}
+
+%Do implementacji sprzętowej wykorzystano opracowaną przez Nvidia architekturę CUDA ( Compute Unified Device Architecture). Dzięki temu implementacja może zostać uruchomiona na dowolnym układzie embedded GPU lub komputerze osobistym, które są wyposażone w procesor graficzny Nvidia. 
 
 \subsection{Architektura}
 \label{subsec:architecture}
 
-Do implementacji sprzętowej wykorzystano opracowaną przez Nvidia architekturę CUDA ( Compute Unified Device Architecture). Dzięki temu implementacja może zostać uruchomiona na dowolnym układzie embedded GPU lub komputerze osobistym, które są wyposażone w procesor graficzny Nvidia. 
-
-W tego typu implementacji sprzętowej istotny jest podział zadań pomiędzy hostem i układem GPU oraz wykorzystanie pamięci współdzielonej. Host odpowiada za akwizycję obrazu i następnie skopiowanie go do pamięci współdzielonej z GPU. Oprócz tego po stronie hosta wykonywana jest również alokacja pamięci wykorzystywanej przez GPU, w związku z tym konieczne jest także zarezerwowanie pamięci dla modelu tła. Komunikacja odbywa się po szynie PCI, zostało to pokazane na rysunku \ref{fig:cpu_host}. 
+Jednym z najistotniejszych elementów jest podział zadań pomiędzy hostem i układem GPU oraz wykorzystanie pamięci współdzielonej. Host odpowiada za akwizycję obrazu i następnie skopiowanie go do pamięci współdzielonej z GPU. Oprócz tego po stronie hosta wykonywana jest również alokacja pamięci wykorzystywanej przez GPU, w związku z tym konieczne jest także zarezerwowanie pamięci dla modelu tła. Komunikacja odbywa się po szynie PCI, zostało to pokazane na rysunku \ref{fig:cpu_host}. 
 
 
 \begin{figure}[!t]
