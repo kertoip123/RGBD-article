@@ -170,6 +170,9 @@ The reminder of this paper is organized as follows. In section \ref{sec:prev_wor
 
 %Struktura niniejszego artykułu jest następująca, w rozdziale \ref{sec:prev_work} przedstawiono wcześniejsze prace związane z wykorzystaniem czujników RGB--D do segmentacji obiektów pierwszoplanowych. Sekcja \ref{} opisuje sposób przekazywania sygnału pochodzącego z czujnika RGB--D do platformy obliczeniowej oraz architekturę do przetwarzania obrazu w technologi CUDA. Sekcja \ref{} zawiera opis implementacji sprzętowej w układzie Nvidia Jetson. W ostatnim rozdziale zamieszczono podsumowanie oraz wskazano dalsze kierunki rozwoju aplikacji.   
 
+\textbf{TODO:}\\
+->wyraźnie zaznaczyć, że to coś nowego i że jest lepsze !!!
+
 \section{Previous work}
 \label{sec:prev_work}
 
@@ -193,7 +196,7 @@ Authors in \cite{Hoffman_2016} proposed foreground segmentation algorithm which 
 
 In the work \cite{Hasnat_2014} another foreground segmentation algorithm which is based on RGB--D sensor was presented. In this case algorithm works without supervision and consists of statistical model based on the color and the geometry of the scene. The authors presented only software model, without embedded or hardware implementation.
 
-This model is used together with a JCSA \textit{Joint Color-Spatial-Axial} clustering method, which is responsible for estimation of background parameters, clustering the pixels and generating the set of regions in the image. The authors proposed hybrid model which uses multivariat Gaussian and Watson distributions. For clustering operation,   
+Proposed model is used together with a JCSA \textit{Joint Color-Spatial-Axial} clustering method, which is responsible for estimation of background parameters, clustering the pixels and generating the set of regions in the image. The authors proposed hybrid model which uses multivariat Gaussian and Watson distributions. For clustering operation,   
 BSC (\textit{Bregman Soft Clustering}) method has been used. The last phase of the algorithm is region merging, for this purpose RAG (ang. \textit{Region Adjacency Graph}) is build. 
 
 Authors compared presented method with another algorithms based on depth image.  Various test for different parameters were conducted, the set of quality indicators was also proposed. The evaluation methodology is based on NYU depth database \cite{}. Test results proved that detection quality is significantly improved comparing to previous solutions.
@@ -273,6 +276,8 @@ For move detection, VSAM (\textit{Video Surveillance and Monitoring}) was used. 
 % GMM z modyfikacjami
 % PBAS z modyfikacjami
 % PBAS z segmentacją obiektów + modyfikacje 
+
+\textbf{TODO:} ewentualnie do skrócenia, nie ma sensu powtarzać 10 razy tego samego...
 
 In this research, the authors implemented two different background subtraction algorithms. They benefit from both, RGB image from traditional camera and depth sensor as well. The fist algorithm is an extended version of \textit{Gaussian Mixture Models}. Its implementation is based of \cite{}. The second method is also modified version of existing algorithm -- \textit{Pixel Based Adaptive Segmenter} \cite{}. Both are very similar regarding the background model concept. It is independent for each pixel and dynamically updated after every frame. In the following subsections detailed description of both method is presented. 
 
@@ -509,18 +514,23 @@ Most calculations are made with the use of GPU, for this purpose the CUDA (\text
 \subsection{Architektura}
 \label{subsec:architecture}
 
-Jednym z najistotniejszych elementów jest podział zadań pomiędzy hostem i układem GPU oraz wykorzystanie pamięci współdzielonej. Host odpowiada za akwizycję obrazu i następnie skopiowanie go do pamięci współdzielonej z GPU. Oprócz tego po stronie hosta wykonywana jest również alokacja pamięci wykorzystywanej przez GPU, w związku z tym konieczne jest także zarezerwowanie pamięci dla modelu tła. Komunikacja odbywa się po szynie PCI, zostało to pokazane na rysunku \ref{fig:cpu_host}. 
+Distribution of tasks between CPU and GPU is one of the key element in implementation of such a hardware accelerated system. The host (CPU) is responsible for image acquisition and copying date to shared GPU memory (DRAM). Moreover, the memory allocation is also provided by host, it is required to reserve memory for background model. Communication between host and GPU is done over PCI bus. Basic architecture scheme is shown in the figure \ref{fig:cpu_host}.    
+
+%Jednym z najistotniejszych elementów jest podział zadań pomiędzy hostem i układem GPU oraz wykorzystanie pamięci współdzielonej. Host odpowiada za akwizycję obrazu i następnie skopiowanie go do pamięci współdzielonej z GPU. Oprócz tego po stronie hosta wykonywana jest również alokacja pamięci wykorzystywanej przez GPU, w związku z tym konieczne jest także zarezerwowanie pamięci dla modelu tła. Komunikacja odbywa się po szynie PCI, zostało to pokazane na rysunku \ref{fig:cpu_host}. 
 
 
 \begin{figure}[!t]
 	\begin{center}
 		\includegraphics[scale=0.50]{img/cpu_host.png}
-		\caption{Communication between host (cpu) and GPU}
+		\caption{Communication between host (CPU) and GPU}
 		\label{fig:cpu_host}
 	\end{center}
 \end{figure}
 
-Właściwy algorytm został w całości zaimplementowany na procesorze graficznym, gdzie dla każdego przetwarzanego piksela tworzony jest osobny wątek. Wyjściem algorytmu jest maska binarna przedstawiająca obiekty pierwszoplanowe, jest umieszczona w pamięci współdzielonej i następnie odczytana przez hosta i przekazana na wyjście. Proces wymiany informacji pomiędzy hostem i gpu został pokazany na rys. \ref{fig:gpu_alg}.
+Every job related with foreground segmentation is implemented in GPU, while CPU is responsible for simple pre and post processing tasks. It allows to process each pixel parallel, independently, using separate thread. The output of the system is binary mask containing foreground objects. This mask has to be copied from GPU DRAM memory to CPU RAM and then forwarded to external display. The entire callstack and process of exchanging data between host and cpu is shown in the figure \ref{fig:gpu_alg}.
+
+
+%Właściwy algorytm został w całości zaimplementowany na procesorze graficznym, gdzie dla każdego przetwarzanego piksela tworzony jest osobny wątek. Wyjściem algorytmu jest maska binarna przedstawiająca obiekty pierwszoplanowe, jest umieszczona w pamięci współdzielonej i następnie odczytana przez hosta i przekazana na wyjście. Proces wymiany informacji pomiędzy hostem i gpu został pokazany na rys. \ref{fig:gpu_alg}.
 
 Implementacja po stronie hosta została napisana w języku \textit{C++}. Do akwizycji obrazu wykorzystano udostępnione przez firmę \textit{Intel} SDK do obsługi sensorów RGB--D. Umożliwia ona odczyt zarówno obrazu RGB z kamery  jak i składowej głębi w czasie rzeczywistym. Obraz głębi jest przesyłany z czujnika w formacie zmiennoprzecinkowym, zatem przed przesłaniem go do GPU konieczna jest konwersja do formatu 8 bitów na pixel (większa wartość oznacza, że obiekt jest dalej od kamery). Ostatecznie każdy piksel obrazu jest zapisany na 32 bitach, po 8 bitów na każdą składową RGB oraz odległość od czujnika. 
 
@@ -532,25 +542,27 @@ Implementacja po stronie hosta została napisana w języku \textit{C++}. Do akwi
 	\end{center}
 \end{figure}
 
-\subsection{GMM implementation}
-\label{subsec:gmm_implementation}
+%\subsection{GMM implementation}
+%\label{subsec:gmm_implementation}
 
 
-\subsection{PBAS implementation}
-\label{subsec:pbas_implementation}
+%\subsection{PBAS implementation}
+%\label{subsec:pbas_implementation}
 
 
 \subsection{Performance}
 \label{subsec:performance}
 
-Wydajność na poszczególnych platformach testowych została zmierzona dla różnych rozdzielczości.%\textbf{TODO: tabelka z pomiarami}
+Wydajność na poszczególnych platformach testowych została zmierzona dla różnych rozdzielczości: 480p/480p, 720p/480p, 720p/720p, 1080p/720p, gdzie poszczególne wartości przedstawiają odpowiednio rozdzielczości obrazu i mapy głębi. Szczegółowe wyniki dla poszczególnych układów GPU zostały przedstawione w tabeli \ref{tab:performance_res}.
+
+%\textbf{TODO: tabelka z pomiarami}
 
 \begin{table}[t!]
 \caption{Performance}
 \centering
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
-&     720p/480p  & XXXXXX & XXXXXX & XXXXXX \\ \hline
+&     480p/480p  & 720p/480p & 720p/720p & 1080p/720p \\ \hline
 Nvidia Jetson TX2  & XXfps & XXfps & XXfps & XXfps  \\ \hline
 i7 7700hq + GTX 1050   & XXfps & XXfps & XXfps & XXfps     \\ \hline
 i7 9700k + RTX 2070 & XXfps & XXfps &  XXfps & XXfps    \\ \hline
@@ -565,12 +577,12 @@ Nvidia Jetson Xavier  & XXfps    & XXfps    & XXfps & XXfps     \\ \hline
 %->standardowy algorytm segmetnacji obiektów (model tła, znajduje się w pamięci współdzielonej), \\
 %->opisać co zrobione w OpenCV, a co w CUDA, problem podziału zadań 
 %biblioteka intela,\\
-->wykorzystane urządzenia - specyfikacja,\\
+%->wykorzystane urządzenia - specyfikacja,\\
 %->przekonwertowanie do tej samej rozdzielczości,\\
 %->opis zastosowanych modułów,\\
 %->w przypadku PBASa z indeksacją można dużo zrobić, np własna indeksacja w CUDA (-to moze w conclusion),\\
-->implementation result,\\
-->wydajność
+%->implementation result,\\
+->wydajność--wnioski
 
 
 \section{Evaluation}
@@ -587,21 +599,18 @@ Do ewaluacji użyto metodologii znanej między innymi z portalu \textit{Change D
 \item[FP] – liczba pikseli błędnie zakwalifikowanych jako pierwszy plan (ang. false positive)
 \end{enumerate}
 
-\noindent Na podstawie wyznaczonych współczynników oblicza się, 7 wskaźników jakości określających dokładność metody:
+\noindent Na podstawie wyznaczonych współczynników oblicza się 4 wskaźniki jakości określających dokładność metody:
 
 \begin{enumerate}
 
-\item Recall (Re): $TP/(TP + FN)$
-\item Specificity (Spec) : $TN/(TN + FP)$
-\item False Positive Rate (FPR) : $FP/(FP + TN)$
-\item False Negative Rate (FNR) : $FN/(FN + TP)$
-\item Percentage of Wrong Classifications (PWC) : $100(FN + FP)/(TP + FN + FP + TN)$
 \item Precision (Pr): $TP/(TP + FP)$
-\item F-measure (F1): $2\frac{Pr*Re}{Pr+Rr}$
+\item Specificity (Spec) : $TN/(TN + FP)$
+\item Recall (Re) : $TP/(TP + FN)$
+\item Percentage of Wrong Classifications (PWC) : $100(FN + FP)/(TP + FN + FP + TN)$
 
 \end{enumerate}
 
-Uzyskane wyniki porównano z oryginalnymi implementacjami algorytmów GMM \cite{} i PBAS \cite{}. %\textbf{TODO: tabelka z wynikami}
+Podczas testów użyto własnoręcznie nagranych krótkich sekwencji video, nagranych za pomocą czujnika Intel RealSense. Wzorowa maska binarna została opracowana manualnie, z wykorzystaniem algorytmów segmentacji znajdujących się w bibliotece OpenCV. Uzyskane wyniki porównano z oryginalnymi implementacjami algorytmów GMM \cite{} i PBAS \cite{}, szczegółowe wyniki zamieszczono w tabeli \ref{tab:evaluation_res}.
 
 
 \begin{table}[t!]
@@ -623,11 +632,12 @@ F1  & XX    & XX    & XX & XX     \\ \hline
 
 
 \textbf{TODO:}\\
- ->ewaluacja algorytmów, \\
- ->nagrane sekwencje testowe, \\
+% ->ewaluacja algorytmów, \\
+ %->nagrane sekwencje testowe, \\
  %->opracowanie groundtrue, \\
- ->zastosowane współczynniki, \\
- ->porównanie z oryginalnymi implementacjami (wyniki z publikacji artykułach ???)
+ %->zastosowane współczynniki, \\
+ %->porównanie z oryginalnymi implementacjami (wyniki z publikacji artykułach ???)
+ ->wnioski z wyników
 
 
 
@@ -635,6 +645,10 @@ F1  & XX    & XX    & XX & XX     \\ \hline
 \textbf{TODO:}\\
 ->w przypadku PBASa z indeksacją można dużo zrobić, np własna indeksacja w CUDA\\
 ->implementacja FPGA w przyszlosci ???\\
+->wykorzystanie RGBD == większa dokładność (plus kilka procent)\\
+->nikt tego wcześniej nie robił\\
+->dodać bib\\
+->zmienić szablon\\
 
 %\bibliographystyle{plain}
 %\bibliography{cars}
